@@ -9,7 +9,8 @@
   "issues_url": "https://github.com/MiamiOH/puppet-lastpass/issues",
   "tags": ["lastpass"],
   "dependencies": [
-    {"name": "puppetlabs/stdlib", "version_requirement": ">= 4.2.0 < 5.0.0"}
+    {"name": "puppetlabs/stdlib", "version_requirement": ">= 4.2.0 < 5.0.0"},
+    {"name": "stahnma/epel", "version_requirement": ">= 1.2.2 < 2.0.0"}
   ],
   "operatingsystem_support": [
     {

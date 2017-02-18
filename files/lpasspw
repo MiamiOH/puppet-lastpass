@@ -1,0 +1,4 @@
+#!/bin/bash
+echo -n "$*: " >/dev/null
+answer=`cat $LPASS_HOME/pw`
+echo $answer
