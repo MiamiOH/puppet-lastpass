@@ -19,7 +19,10 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasspw",
   }
 
-  # TODO find a real place to put this file
+  file { $lpass_home:
+    ensure => directory,
+    mode   => '0600',
+  }
   file { "${lpass_home}/pw":
     ensure  => file,
     mode    => '0400',
