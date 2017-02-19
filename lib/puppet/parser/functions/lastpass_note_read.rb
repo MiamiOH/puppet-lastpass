@@ -17,19 +17,21 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   name = args[1]
   raise Puppet::ParseError, 'Must provide data name' if name.empty?
 
-  u = lookupvar('lastpass::username')
+  username = lookupvar('lastpass::username')
 
-  # TODO verify that the lpass command is available
+  cmd = `which lpass`
+  raise Puppet::ParseError, 'lpass command not found' if cmd.empty?
+  version = `lpass --version`.strip
+  raise Puppet::ParseError, "unexpected lpass version: #{version}" unless version =~ /v1.1.2$/
+
   # TODO consider how sync should be handled
   
   status = `lpass status`.strip
-  puts "Status: #{status} (#{$?.exitstatus})"
 
-  if $?.exitstatus
+  if $?.exitstatus != 0
     if status == 'Not logged in.'
-      r = `lpass login #{u}`
-      # TODO validate that login was successful
-      puts r
+      login_result = `lpass login #{username}`
+      raise Puppet::ParseError, "lpass login failed: #{login_result}" unless login_result =~ /^Success:/
     else
       raise Puppet::ParseError, "lpass status error: #{status}"
     end
