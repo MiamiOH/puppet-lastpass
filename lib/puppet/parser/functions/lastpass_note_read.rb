@@ -20,21 +20,34 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   u = lookupvar('lastpass::username')
 
   # TODO verify that the lpass command is available
-  # 
-  r = `lpass login #{u}`
-  # TODO validate that login was successful
-  # TODO do we really need to login each time or can this be saved?
-  puts r
+  # TODO consider how sync should be handled
+  
+  status = `lpass status`.strip
+  puts "Status: #{status} (#{$?.exitstatus})"
+
+  if $?.exitstatus
+    if status == 'Not logged in.'
+      r = `lpass login #{u}`
+      # TODO validate that login was successful
+      puts r
+    else
+      raise Puppet::ParseError, "lpass status error: #{status}"
+    end
+  end
 
   r2 = `lpass ls`
+  puts "lpass ls (#{$?.exitstatus})"
   # TODO validate that the requested folder/name exists
   puts r2
 
   r3 = `lpass show #{folder}/#{name}`
+  puts "lpass show (#{$?.exitstatus})"
 
   puts r3
 
   note = YAML.load(r3)
+  # TODO if yaml load fails, return raw content
+  # TODO return YAML content if unknown type
 
   case note['NoteType']
 

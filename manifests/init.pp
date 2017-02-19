@@ -4,9 +4,10 @@
 
 class lastpass (
   $package  = $lastpass::params::package,
+  $home     = '/root/.lpass',
+  $agent_timeout = 3600,
   $username = undef,
   $password = undef,
-  $lpass_home = '/root/.lpass'
 ) inherits lastpass::params {
 
   package { $package:
@@ -19,11 +20,11 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasspw",
   }
 
-  file { $lpass_home:
+  file { $home:
     ensure => directory,
     mode   => '0600',
   }
-  file { "${lpass_home}/pw":
+  file { "${home}/pw":
     ensure  => file,
     mode    => '0400',
     content => inline_template("<%= @password %>")
@@ -32,7 +33,8 @@ class lastpass (
   profiled::script { 'lpass.sh':
     ensure  => file,
     content => "export LPASS_ASKPASS=/usr/local/bin/lpasspw
-                export LPASS_HOME=${lpass_home}",
+                export LPASS_HOME=${home}
+                export LPASS_AGENT_TIMEOUT=${agent_timeout}",
     shell   => 'absent',
   }
 
