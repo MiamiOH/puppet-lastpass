@@ -3,12 +3,17 @@
 # This class installs the LastPass CLI and provides functions to interact with it.
 
 class lastpass (
-  $package       = $lastpass::params::package,
-  $home          = '/root/.lpass',
-  $agent_timeout = 3600,
-  $username      = undef,
-  $password      = undef,
+  $package             = $lastpass::params::package,
+  $home                = undef,
+  $lpass_home          = "\$HOME/.lpass",
+  $lpass_agent_timeout = 3600,
+  $username            = undef,
+  $password            = undef,
 ) inherits lastpass::params {
+
+  if ($home and !$password) or ($password and !$home) {
+    fail('Cannot specify only one of lastpass::home or lastpass::password')
+  }
 
   package { $package:
     ensure => present,
@@ -22,15 +27,17 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasspw",
   }
 
-  file { $home:
-    ensure => directory,
-    mode   => '0600',
-  }
+  if $home and $password {
+    file { $home:
+      ensure => directory,
+      mode   => '0600',
+    } ->
 
-  file { "${home}/pw":
-    ensure  => file,
-    mode    => '0400',
-    content => $password,
+    file { "${home}/pw":
+      ensure  => file,
+      mode    => '0400',
+      content => $password,
+    }
   }
 
   profiled::script { 'lpass.sh':
