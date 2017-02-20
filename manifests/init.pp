@@ -14,8 +14,10 @@ class lastpass (
     ensure => present,
   }
 
-  file { "/usr/local/bin/lpasspw":
+  file { '/usr/local/bin/lpasspw':
     ensure => file,
+    owner  => 'root',
+    group  => 'root',
     mode   => '0755',
     source => "puppet:///modules/${module_name}/lpasspw",
   }
@@ -27,7 +29,7 @@ class lastpass (
   file { "${home}/pw":
     ensure  => file,
     mode    => '0400',
-    content => inline_template("<%= @password %>")
+    content => inline_template('<%= @password %>'),
   }
 
   profiled::script { 'lpass.sh':

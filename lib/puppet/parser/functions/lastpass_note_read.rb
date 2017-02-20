@@ -30,12 +30,9 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   status = `lpass status`.strip
 
   if $CHILD_STATUS.exitstatus != 0
-    if status == 'Not logged in.'
-      login_result = `lpass login #{username}`
-      raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
-    else
-      raise Puppet::ParseError, "error: lpass status: #{status}"
-    end
+    raise Puppet::ParseError, "error: lpass status: #{status}" unless status == 'Not logged in.'
+    login_result = `lpass login #{username}`
+    raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
   end
 
   ls_result = `lpass ls '#{folder}'`
