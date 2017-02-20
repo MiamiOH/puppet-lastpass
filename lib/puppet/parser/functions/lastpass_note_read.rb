@@ -31,23 +31,31 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   if $?.exitstatus != 0
     if status == 'Not logged in.'
       login_result = `lpass login #{username}`
-      raise Puppet::ParseError, "lpass login failed: #{login_result}" unless login_result =~ /^Success:/
+      raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
     else
-      raise Puppet::ParseError, "lpass status error: #{status}"
+      raise Puppet::ParseError, "error: lpass status: #{status}"
     end
   end
 
-  r2 = `lpass ls`
-  puts "lpass ls (#{$?.exitstatus})"
-  # TODO validate that the requested folder/name exists
-  puts r2
+  ls_result = `lpass ls '#{folder}'`
+  if $?.exitstatus != 0
+    raise Puppet::ParseError, "error: lpass ls '#{folder}': #{status}"
+  end
 
-  r3 = `lpass show #{folder}/#{name}`
-  puts "lpass show (#{$?.exitstatus})"
+  ls_result =~ /#{Regexp.escape(folder)}\/#{Regexp.escape(name)} \[id: ([^\]]+)\]/
+  id = Regexp.last_match(1)
+  unless id
+    raise Puppet::ParseError, "error: unable to find id for '#{folder}/#{name}' in :\n#{ls_result}"
+  end
 
-  puts r3
+  show_result = `lpass show '#{id}'`
+  if $?.exitstatus != 0
+    raise Puppet::ParseError, "error: lpass show '#{folder}/#{name}' [id: #{id}]: #{status}"
+  end
 
-  note = YAML.load(r3)
+  puts show_result
+
+  note = YAML.load(show_result)
   # TODO if yaml load fails, return raw content
   # TODO return YAML content if unknown type
 
