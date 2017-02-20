@@ -1,0 +1,6 @@
+if [ -f "<%= @home %>/pw" ]
+then
+  export LPASS_ASKPASS=/usr/local/bin/lpasspw
+fi
+export LPASS_HOME=<%= @home %>
+export LPASS_AGENT_TIMEOUT=<%= @agent_timeout %>
