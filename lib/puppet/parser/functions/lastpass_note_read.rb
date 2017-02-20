@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'yaml'
+require 'English'
 # require 'etc'
 
 # Retrieves from a LastPass secure note
@@ -24,11 +25,11 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   version = `lpass --version`.strip
   raise Puppet::ParseError, "unexpected lpass version: #{version}" unless version =~ /v1.1.2$/
 
-  # TODO consider how sync should be handled
-  
+  # TODO: consider how sync should be handled
+
   status = `lpass status`.strip
 
-  if $?.exitstatus != 0
+  if $CHILD_STATUS.exitstatus != 0
     if status == 'Not logged in.'
       login_result = `lpass login #{username}`
       raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
@@ -38,41 +39,91 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   end
 
   ls_result = `lpass ls '#{folder}'`
-  if $?.exitstatus != 0
+  if $CHILD_STATUS.exitstatus != 0
     raise Puppet::ParseError, "error: lpass ls '#{folder}': #{status}"
   end
 
-  ls_result =~ /#{Regexp.escape(folder)}\/#{Regexp.escape(name)} \[id: ([^\]]+)\]/
+  ls_result =~ %r{#{Regexp.escape(folder)}/#{Regexp.escape(name)} \[id: ([^\]]+)\]}
   id = Regexp.last_match(1)
   unless id
     raise Puppet::ParseError, "error: unable to find id for '#{folder}/#{name}' in :\n#{ls_result}"
   end
 
   show_result = `lpass show '#{id}'`
-  if $?.exitstatus != 0
+  if $CHILD_STATUS.exitstatus != 0
     raise Puppet::ParseError, "error: lpass show '#{folder}/#{name}' [id: #{id}]: #{status}"
   end
 
-  puts show_result
+  # Parsing the output could use some cleaning up, but this works for now.
+  # The output appears to have reasonably consistent structure.
+  # The first line is the SHARE/GROUP\PATH/UNIQUENAME [id: nnnn]
+  # Following lines are Field Name: ...
+  # The Notes field seems to be last, which makes sense since it can be
+  # multi-line. Once it starts, just read everything else into it.
+  note = {}
+  note_type = ''
+  start_notes = false
 
-  note = YAML.load(show_result)
-  # TODO if yaml load fails, return raw content
-  # TODO return YAML content if unknown type
-
-  case note['NoteType']
-
-    when 'Database'
-      content = {
-        'username' => note['Username'],
-        'password' => note['Password'],
-        'sid' => note['SID'],
-        'database' => note['Database'],
-        'type' => note['Type'],
-      }
-
+  show_result.split("\n").each do |field|
+    if field =~ /(.*) \[id: ([^\]]+)\]/
+      # Ignore the note path and id
+    elsif field =~ /^Note_type: (.*)/
+      note_type = Regexp.last_match(1)
+    elsif field =~ /^Notes: (.*)/
+      note['notes'] = Regexp.last_match(1)
+      start_notes = true
+    elsif start_notes
+      note['notes'] << "\n"
+      note['notes'] << field
     else
-      content = nil
+      name, value = field.split(': ')
+      note[name] = value
+    end
+  end
 
+  # Normalize the note into the expected return values. We probably
+  # need to spend some time thinking about this before anything
+  # is implemented. The predefined types are easy to map. Custom
+  # types seem useful in the UI, but the name doesn't come through
+  # and I'm not sure how custom types are shared.
+  #
+  # If the notes field value starts with '---', assume it is YAML
+  # and parse it, returning the result.
+  #
+  # Otherwise, just return the parsed note.
+  case note_type
+  when 'Database'
+    content = {
+      'username' => note['Username'],
+      'password' => note['Password'],
+      'sid' => note['SID'],
+      'database' => note['Database'],
+      'type' => note['Type']
+    }
+  when 'Server'
+    content = {
+      'username' => note['Username'],
+      'password' => note['Password'],
+      'hostname' => note['Hostname']
+    }
+  when 'SSH Key'
+    content = {
+      'public' => note['Public Key'],
+      'private' => note['Private Key'],
+      'passphrase' => note['Passphrase'],
+      'format' => note['Format'],
+      'hostname' => note['Hostname']
+    }
+  else
+    if note['notes'] =~ /^---/
+      begin
+        content = YAML.load(note['notes'])
+      rescue
+        content = note
+      end
+    else
+      content = note
+    end
   end
 
   content
