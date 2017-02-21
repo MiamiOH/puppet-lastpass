@@ -58,14 +58,11 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   # The Notes field seems to be last, which makes sense since it can be
   # multi-line. Once it starts, just read everything else into it.
   note = {}
-  note_type = ''
   start_notes = false
 
   show_result.split("\n").each do |field|
     if field =~ /(.*) \[id: ([^\]]+)\]/
       # Ignore the note path and id
-    elsif field =~ /^Note_type: (.*)/
-      note_type = Regexp.last_match(1)
     elsif field =~ /^Notes: (.*)/
       note['notes'] = Regexp.last_match(1)
       start_notes = true
@@ -78,50 +75,6 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
     end
   end
 
-  # Normalize the note into the expected return values. We probably
-  # need to spend some time thinking about this before anything
-  # is implemented. The predefined types are easy to map. Custom
-  # types seem useful in the UI, but the name doesn't come through
-  # and I'm not sure how custom types are shared.
-  #
-  # If the notes field value starts with '---', assume it is YAML
-  # and parse it, returning the result.
-  #
-  # Otherwise, just return the parsed note.
-  case note_type
-  when 'Database'
-    content = {
-      'username' => note['Username'],
-      'password' => note['Password'],
-      'sid' => note['SID'],
-      'database' => note['Database'],
-      'type' => note['Type']
-    }
-  when 'Server'
-    content = {
-      'username' => note['Username'],
-      'password' => note['Password'],
-      'hostname' => note['Hostname']
-    }
-  when 'SSH Key'
-    content = {
-      'public' => note['Public Key'],
-      'private' => note['Private Key'],
-      'passphrase' => note['Passphrase'],
-      'format' => note['Format'],
-      'hostname' => note['Hostname']
-    }
-  else
-    if note['notes'] =~ /^---/
-      begin
-        content = YAML.load(note['notes'])
-      rescue
-        content = note
-      end
-    else
-      content = note
-    end
-  end
-
-  content
+  note
+  
 end
