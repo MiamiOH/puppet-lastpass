@@ -1,0 +1,7 @@
+fixtures:
+  repositories:
+    stdlib: "https://github.com/puppetlabs/puppetlabs-stdlib.git"
+    epel: "https://github.com/stahnma/puppet-module-epel.git"
+    profiled: "https://github.com/unibet/puppet-profiled.git"
+  symlinks:
+    lastpass: "#{source_dir}"
