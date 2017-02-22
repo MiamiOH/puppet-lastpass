@@ -7,10 +7,10 @@ require 'English'
 #
 # Useful for having data that is managed via LastPass and shared with Puppet.
 #
-# Usage: lastpass_note_read(folder, name)
-# Example: $db_config = lastpass_note_read('oracle/db', 'appuser')
-Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do |args|
-  raise Puppet::ParseError, 'Usage: lastpass_note_read(folder, name)' unless args.size == 2
+# Usage: lastpass_item_read(folder, name)
+# Example: $db_config = lastpass_item_read('oracle/db', 'appuser')
+Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do |args|
+  raise Puppet::ParseError, 'Usage: lastpass_item_read(folder, name)' unless args.size == 2
 
   folder = args[0]
   raise Puppet::ParseError, 'Must provide folder' if folder.empty?
@@ -76,5 +76,5 @@ Puppet::Parser::Functions.newfunction(:lastpass_note_read, :type => :rvalue) do 
   end
 
   note
-  
+
 end
