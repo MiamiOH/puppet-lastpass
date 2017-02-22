@@ -76,5 +76,4 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
   end
 
   note
-
 end
