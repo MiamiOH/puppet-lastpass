@@ -12,11 +12,11 @@ class lastpass (
 ) inherits lastpass::params {
 
   if $password and !$home {
-    fail('Cannot lastpass::password without lastpass::home')
+    fail('Cannot set lastpass::password without lastpass::home')
   }
 
   if $username and !$home {
-    fail('Cannot lastpass::username without lastpass::home')
+    fail('Cannot set lastpass::username without lastpass::home')
   }
 
   package { $package:
