@@ -31,6 +31,14 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasspw",
   }
 
+  file { '/usr/local/bin/lpasslogin':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => "puppet:///modules/${module_name}/lpasslogin",
+  }
+
   if $home {
     file { $home:
       ensure => directory,

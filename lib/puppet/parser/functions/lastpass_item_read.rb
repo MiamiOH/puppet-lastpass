@@ -24,8 +24,6 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
   pw_path = Pathname.new("#{ENV['LPASS_HOME']}/pw")
   raise Puppet::ParseError, "Expected password file (#{ENV['LPASS_HOME']}/pw}) not found" unless pw_path.exist?
 
-  username = File.read(user_path)
-
   cmd = `which lpass`
   raise Puppet::ParseError, 'lpass command not found' if cmd.empty?
   version = `lpass --version`.strip
@@ -37,7 +35,7 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
 
   if $CHILD_STATUS.exitstatus != 0
     raise Puppet::ParseError, "error: lpass status: #{status}" unless status == 'Not logged in.'
-    login_result = `lpass login #{username}`
+    login_result = `lpasslogin`
     raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
   end
 
