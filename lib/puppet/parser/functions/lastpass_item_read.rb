@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'yaml'
 require 'English'
-# require 'etc'
+require 'pathname'
 
 # Retrieves from a LastPass secure note
 #
@@ -18,7 +18,13 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
   name = args[1]
   raise Puppet::ParseError, 'Must provide data name' if name.empty?
 
-  username = lookupvar('lastpass::username')
+  user_path = Pathname.new("#{ENV['LPASS_HOME']}/user")
+  raise Puppet::ParseError, "Expected user file (#{ENV['LPASS_HOME']}/user}) not found" unless user_path.exist?
+
+  pw_path = Pathname.new("#{ENV['LPASS_HOME']}/pw")
+  raise Puppet::ParseError, "Expected password file (#{ENV['LPASS_HOME']}/pw}) not found" unless pw_path.exist?
+
+  username = File.read(user_path)
 
   cmd = `which lpass`
   raise Puppet::ParseError, 'lpass command not found' if cmd.empty?
