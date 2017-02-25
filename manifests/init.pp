@@ -5,9 +5,9 @@
 class lastpass (
   $manage_package      = true,
   $package             = $lastpass::params::package,
-  $home                = undef,
   $lpass_home          = "\$HOME/.lpass",
   $lpass_agent_timeout = 3600,
+  $home                = undef,
   $username            = undef,
   $password            = undef,
 ) inherits lastpass::params {
