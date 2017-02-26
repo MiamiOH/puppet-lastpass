@@ -3,6 +3,7 @@
 # This class installs the LastPass CLI and provides functions to interact with it.
 
 class lastpass (
+<<<<<<< b533c9024e9b575356a68c59f962b49aed8561a3
   $manage_package     = true,
   $package            = $lastpass::params::package,
   $lpass_home         = "\$HOME/.lpass",
@@ -12,6 +13,17 @@ class lastpass (
   $user_username      = undef,
   $user_password      = undef,
   $user_agent_timeout = 3600,
+=======
+  $manage_package      = true,
+  $package             = $lastpass::params::package,
+  $lpass_home          = "\$HOME/.lpass",
+  $lpass_agent_timeout = 3600,
+  $home                = undef,
+  $username            = undef,
+  $password            = undef,
+  $sync_type           = undef,
+  $auto_sync_time      = undef,
+>>>>>>> Add sync type params
 ) inherits lastpass::params {
 
   if $user and !$user_home {
@@ -86,6 +98,19 @@ class lastpass (
       content => $user_username,
       require => File[$user_home],
     }
+  }
+
+  if $sync_type {
+    file { "${home}/sync":
+      ensure  => file,
+      mode    => '0400',
+      content => $sync_type,
+      require => File[$home],
+    }
+  }
+
+  if $sync_type = 'auto' {
+    # Setup cron job
   }
 
   profiled::script { 'lpass.sh':
