@@ -68,11 +68,11 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
     if field =~ /(.*) \[id: ([^\]]+)\]/
       # Ignore the note path and id
     elsif field =~ /^Notes: (.*)/
-      note['notes'] = Regexp.last_match(1)
+      note['Notes'] = Regexp.last_match(1)
       start_notes = true
     elsif start_notes
-      note['notes'] << "\n"
-      note['notes'] << field
+      note['Notes'] << "\n"
+      note['Notes'] << field
     else
       name, value = field.split(': ')
       note[name] = value
