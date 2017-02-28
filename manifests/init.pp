@@ -3,10 +3,11 @@
 # This class installs the LastPass CLI and provides functions to interact with it.
 
 class lastpass (
+  $manage_package      = true,
   $package             = $lastpass::params::package,
-  $home                = undef,
   $lpass_home          = "\$HOME/.lpass",
   $lpass_agent_timeout = 3600,
+  $home                = undef,
   $username            = undef,
   $password            = undef,
 ) inherits lastpass::params {
@@ -15,8 +16,10 @@ class lastpass (
     fail('Cannot specify only one of lastpass::home or lastpass::password')
   }
 
-  package { $package:
-    ensure => present,
+  if $manage_package {
+    package { $package:
+      ensure => present,
+    }
   }
 
   file { '/usr/local/bin/lpasspw':
