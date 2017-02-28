@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'yaml'
 require 'English'
-# require 'etc'
+require 'pathname'
 
 # Retrieves from a LastPass secure note
 #
@@ -18,7 +18,11 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
   name = args[1]
   raise Puppet::ParseError, 'Must provide data name' if name.empty?
 
-  username = lookupvar('lastpass::username')
+  user_path = Pathname.new("#{ENV['LPASS_HOME']}/user")
+  raise Puppet::ParseError, "Expected user file (#{ENV['LPASS_HOME']}/user}) not found" unless user_path.exist?
+
+  pw_path = Pathname.new("#{ENV['LPASS_HOME']}/pw")
+  raise Puppet::ParseError, "Expected password file (#{ENV['LPASS_HOME']}/pw}) not found" unless pw_path.exist?
 
   cmd = `which lpass`
   raise Puppet::ParseError, 'lpass command not found' if cmd.empty?
@@ -31,7 +35,7 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
 
   if $CHILD_STATUS.exitstatus != 0
     raise Puppet::ParseError, "error: lpass status: #{status}" unless status == 'Not logged in.'
-    login_result = `lpass login #{username}`
+    login_result = `lpasslogin`
     raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
   end
 
@@ -64,11 +68,11 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
     if field =~ /(.*) \[id: ([^\]]+)\]/
       # Ignore the note path and id
     elsif field =~ /^Notes: (.*)/
-      note['notes'] = Regexp.last_match(1)
+      note['Notes'] = Regexp.last_match(1)
       start_notes = true
     elsif start_notes
-      note['notes'] << "\n"
-      note['notes'] << field
+      note['Notes'] << "\n"
+      note['Notes'] << field
     else
       name, value = field.split(': ')
       note[name] = value

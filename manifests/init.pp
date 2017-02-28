@@ -12,8 +12,12 @@ class lastpass (
   $password            = undef,
 ) inherits lastpass::params {
 
-  if ($home and !$password) or ($password and !$home) {
-    fail('Cannot specify only one of lastpass::home or lastpass::password')
+  if $password and !$home {
+    fail('Cannot set lastpass::password without lastpass::home')
+  }
+
+  if $username and !$home {
+    fail('Cannot set lastpass::username without lastpass::home')
   }
 
   if $manage_package {
@@ -30,16 +34,36 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasspw",
   }
 
-  if $home and $password {
+  file { '/usr/local/bin/lpasslogin':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => "puppet:///modules/${module_name}/lpasslogin",
+  }
+
+  if $home {
     file { $home:
       ensure => directory,
       mode   => '0600',
-    } ->
+    }
+  }
 
+  if $password {
     file { "${home}/pw":
       ensure  => file,
       mode    => '0400',
       content => $password,
+      require => File[$home],
+    }
+  }
+
+  if $username {
+    file { "${home}/user":
+      ensure  => file,
+      mode    => '0400',
+      content => $username,
+      require => File[$home],
     }
   }
 

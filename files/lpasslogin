@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ -f "$LPASS_HOME/user" ]; then
+    username=`cat $LPASS_HOME/user`
+fi
+
+lpass login $username
