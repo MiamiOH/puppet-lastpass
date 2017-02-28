@@ -53,9 +53,24 @@ Once installed, the lpass command is available as documented on the [user guide]
 
 ### Automated login
 
-The module provides two helper scripts to facilitate automated login for unattended systems. These scripts require the LastPass username be placed in $LASTPASS_HOME/user and the password in $LASTPASS_HOME/pw. The module will create these if the home, username and password parameters are provided, or they can be created maually for the desired user. The default value of $LASTPASS_HOME is '$HOME/.lpass'.
+The module provides two helper scripts to facilitate automated login for unattended systems. These scripts require the LastPass username be placed in $LASTPASS_HOME/user and the password in $LASTPASS_HOME/pw. The module will create these if the home, username and password parameters are provided, or they can be created manually for the desired user. The default value of $LASTPASS_HOME is '$HOME/.lpass'.
 
 The lpasslogin script will read the $LASTPASS_HOME/user file and run 'lpass login $USERNAME'. If $LASTPASS_HOME/pw is present, the profile script installed by the module will set $LASTPASS_ASKPASS to the lpasspw script, which reads $LASTPASS_HOME/pw and prints it to STDOUT in response to the CLI.
+
+The lastpass class can configure a user for automated login during provisioning. To configure the root user for example:
+```puppet
+class { 'lastpass':
+  user               => 'root',
+  group              => 'root',
+  user_home          => "${::root_home}/.lpass",
+  user_username      => 'lpassuser@example.com',
+  user_password      => 'lpass_master_pw',
+  user_agent_timeout => 0,
+}
+
+```
+
+The lastpass::username and lastpass::password params can be left out and manually created as described above.
 
 ### lastpass_item_read
 
@@ -121,10 +136,12 @@ Installs and configures LastPass CLI.
 - `manage_package`: [Boolean] Manage the LastPass CLI package. You must configure the appropriate repo. Defaults to true.
 - `package`: [String] The name of the LastPass CLI package to install. Defaults to 'lastpass-cli'.
 - `lpass_home`: [String] The string to set as the $LASTPASS_HOME value in the profile script. Should work for any logged in user. Defaults to '$HOME/.lpass'.
-- `lpass_agent_timeout`: [Integer] The agent timeout in seconds after which relogin is required. Setting this to 0 disables the timeout. Defaults to 3600.
-- `home`: [String] A valid path for suitable for $LASTPASS_HOME. If username and/or password are given, they will be written to the corresponding files at this location. Defaults to undef.
-- `username`: [String] The LastPass username for automated login. Requires the home parameter. Defaults to undef.
-- `password`: [String] The LastPass password for automated login. Requires the home parameter. Defaults to undef.
+- `user`: [String] The user to be configured for non-interactive lpass use. Requires that lastpass::user_home and lastpass::group be set. The module does NOT create this user.
+- `group`: [String] The group that will own lastpass::user_home.
+- `user_home`: [String] A valid path corresponding to $LASTPASS_HOME for lastpass::user. The username and password will be written to the corresponding files at this location. Defaults to undef.
+- `user_username`: [String] The LastPass username for automated login. Requires the user_home parameter. Defaults to undef.
+- `user_password`: [String] The LastPass password for automated login. Requires the user_home parameter. Defaults to undef.
+- `user_agent_timeout`: [Integer] The agent timeout in seconds after which relogin is required. Setting this to 0 disables the timeout. Defaults to 3600.
 
 ### Private Classes
 
