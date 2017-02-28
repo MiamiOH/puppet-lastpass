@@ -1,5 +1,4 @@
 <%= %Q(export LPASS_HOME=#{@lpass_home}\n) if @lpass_home -%>
-<%= %Q(export LPASS_AGENT_TIMEOUT=#{@lpass_agent_timeout}\n) if @lpass_agent_timeout -%>
 if [ -f "${LPASS_HOME}/pw" ]; then
   export LPASS_ASKPASS=/usr/local/bin/lpasspw
 fi

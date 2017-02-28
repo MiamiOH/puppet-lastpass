@@ -3,21 +3,21 @@
 # This class installs the LastPass CLI and provides functions to interact with it.
 
 class lastpass (
-  $manage_package      = true,
-  $package             = $lastpass::params::package,
-  $lpass_home          = "\$HOME/.lpass",
-  $lpass_agent_timeout = 3600,
-  $home                = undef,
-  $username            = undef,
-  $password            = undef,
+  $manage_package     = true,
+  $package            = $lastpass::params::package,
+  $lpass_home         = "\$HOME/.lpass",
+  $user_home          = undef,
+  $user_username      = undef,
+  $user_password      = undef,
+  $user_agent_timeout = 3600,
 ) inherits lastpass::params {
 
-  if $password and !$home {
-    fail('Cannot set lastpass::password without lastpass::home')
+  if $user_password and !$user_home {
+    fail('Cannot set lastpass::user_password without lastpass::user_home')
   }
 
-  if $username and !$home {
-    fail('Cannot set lastpass::username without lastpass::home')
+  if $user_username and !$user_home {
+    fail('Cannot set lastpass::user_username without lastpass::user_home')
   }
 
   if $manage_package {
@@ -42,28 +42,33 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasslogin",
   }
 
-  if $home {
-    file { $home:
+  if $user_home {
+    file { $user_home:
       ensure => directory,
       mode   => '0600',
+    } ->
+
+    file { "${user_home}/env":
+      ensure  => present,
+      content => template("${module_name}/user_env.erb"),
     }
   }
 
-  if $password {
-    file { "${home}/pw":
+  if $user_password {
+    file { "${user_home}/pw":
       ensure  => file,
       mode    => '0400',
-      content => $password,
-      require => File[$home],
+      content => $user_password,
+      require => File[$user_home],
     }
   }
 
-  if $username {
-    file { "${home}/user":
+  if $user_username {
+    file { "${user_home}/user":
       ensure  => file,
       mode    => '0400',
-      content => $username,
-      require => File[$home],
+      content => $user_username,
+      require => File[$user_home],
     }
   }
 
