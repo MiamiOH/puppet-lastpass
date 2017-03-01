@@ -65,7 +65,7 @@ class lastpass (
     } ->
 
     file { "${user_home}/env":
-      ensure  => present,
+      ensure  => file,
       content => template("${module_name}/user_env.erb"),
     }
   }
