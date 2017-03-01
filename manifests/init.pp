@@ -3,27 +3,17 @@
 # This class installs the LastPass CLI and provides functions to interact with it.
 
 class lastpass (
-<<<<<<< b533c9024e9b575356a68c59f962b49aed8561a3
-  $manage_package     = true,
-  $package            = $lastpass::params::package,
-  $lpass_home         = "\$HOME/.lpass",
-  $user               = undef,
-  $group              = undef,
-  $user_home          = undef,
-  $user_username      = undef,
-  $user_password      = undef,
-  $user_agent_timeout = 3600,
-=======
   $manage_package      = true,
   $package             = $lastpass::params::package,
   $lpass_home          = "\$HOME/.lpass",
-  $lpass_agent_timeout = 3600,
-  $home                = undef,
-  $username            = undef,
-  $password            = undef,
-  $sync_type           = undef,
-  $auto_sync_time      = undef,
->>>>>>> Add sync type params
+  $user                = undef,
+  $group               = undef,
+  $user_home           = undef,
+  $user_username       = undef,
+  $user_password       = undef,
+  $user_agent_timeout  = 3600,
+  $user_sync_type      = undef,
+  $user_auto_sync_time = undef,
 ) inherits lastpass::params {
 
   if $user and !$user_home {
