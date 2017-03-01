@@ -1,2 +1,2 @@
-<%= %Q(export LPASS_AGENT_TIMEOUT=#{@user_agent_timeout}\n) if @user_agent_timeout -%>
-<%= %Q(export LPASS_AUTO_SYNC_TIME=#{@user_auto_sync_time}\n) if @user_auto_sync_time -%>
+<%= %Q(LPASS_AGENT_TIMEOUT=#{@user_agent_timeout}\n) if @user_agent_timeout -%>
+<%= %Q(LPASS_AUTO_SYNC_TIME=#{@user_auto_sync_time}\n) if @user_auto_sync_time -%>

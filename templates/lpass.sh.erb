@@ -2,3 +2,6 @@
 if [ -f "${LPASS_HOME}/pw" ]; then
   export LPASS_ASKPASS=/usr/local/bin/lpasspw
 fi
+if [ -f "${LPASS_HOME}/sync" ]; then
+  export LPASS_USER_SYNC_TYPE=`cat ${LPASS_HOME}/sync`
+fi

@@ -12,7 +12,7 @@ class lastpass (
   $user_username       = undef,
   $user_password       = undef,
   $user_agent_timeout  = 3600,
-  $user_sync_type      = undef,
+  $user_sync_type      = 'auto',
   $user_auto_sync_time = undef,
 ) inherits lastpass::params {
 
@@ -35,6 +35,9 @@ class lastpass (
   if $user_username and !$user_home {
     fail('Cannot set lastpass::user_username without lastpass::user_home')
   }
+
+  validate_re($user_sync_type, '^(auto|now|no)$',
+  "Sync type ${user_sync_type} is not valid, use one of auto, now or no")
 
   if $manage_package {
     package { $package:
@@ -75,7 +78,9 @@ class lastpass (
   if $user_password {
     file { "${user_home}/pw":
       ensure  => file,
-      mode    => '0400',
+      owner   => $user,
+      group   => $group,
+      mode    => '0600',
       content => $user_password,
       require => File[$user_home],
     }
@@ -84,23 +89,23 @@ class lastpass (
   if $user_username {
     file { "${user_home}/user":
       ensure  => file,
-      mode    => '0400',
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
       content => $user_username,
       require => File[$user_home],
     }
   }
 
-  if $sync_type {
-    file { "${home}/sync":
+  if $user_sync_type {
+    file { "${user_home}/sync":
       ensure  => file,
-      mode    => '0400',
-      content => $sync_type,
-      require => File[$home],
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      content => $user_sync_type,
+      require => File[$user_home],
     }
-  }
-
-  if $sync_type = 'auto' {
-    # Setup cron job
   }
 
   profiled::script { 'lpass.sh':
