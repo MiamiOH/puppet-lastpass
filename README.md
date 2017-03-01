@@ -142,6 +142,8 @@ Installs and configures LastPass CLI.
 - `user_username`: [String] The LastPass username for automated login. Requires the user_home parameter. Defaults to undef.
 - `user_password`: [String] The LastPass password for automated login. Requires the user_home parameter. Defaults to undef.
 - `user_agent_timeout`: [Integer] The agent timeout in seconds after which relogin is required. Setting this to 0 disables the timeout. Defaults to 3600.
+- `user_sync_type`: [string] The sync option value to use with lpass commands which support sync. Must be one of 'auto', 'now', or 'no'. Defaults to auto.
+- `user_auto_sync_time`: [Integer]  Defaults to undef.
 
 ### Private Classes
 
