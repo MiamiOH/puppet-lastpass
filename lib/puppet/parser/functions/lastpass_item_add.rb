@@ -25,10 +25,14 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_add, :type => :rvalue) do |
   login
 
   id = item_id(folder, name)
-  raise Puppet::ParseError, "error: unable to find id for '#{folder}/#{name}'" if id
+  raise Puppet::ParseError, "error: item '#{folder}/#{name}' found with id #{id}" if id
 
   options = "--sync=#{sync_type} --non-interactive --notes"
   add_result = `echo "#{content}" | lpass add #{options} '#{folder}/#{name}'`
   raise Puppet::ParseError, "error: lpass add '#{folder}/#{name}': #{add_result}" \
     unless $CHILD_STATUS.exitstatus.zero?
+
+  # Fetch the newly created item. This both tests the creation and yields the result
+  # in the expected format. Getting by id doesn't work for newly created items.
+  get_item_by_uniquename("#{folder}/#{name}")
 end

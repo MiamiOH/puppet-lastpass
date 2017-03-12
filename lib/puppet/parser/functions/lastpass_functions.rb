@@ -49,3 +49,47 @@ def item_id(folder, name)
 
   Regexp.last_match(1)
 end
+
+def get_item_by_id(id)
+  show_result = `lpass show --sync=#{sync_type} '#{id}'`
+  raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{show_result}" \
+    unless $CHILD_STATUS.exitstatus.zero?
+
+  parse_item(show_result)
+end
+
+def get_item_by_uniquename(uniquename)
+  show_result = `lpass show --sync=#{sync_type} '#{uniquename}'`
+  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{show_result}" \
+    unless $CHILD_STATUS.exitstatus.zero?
+
+  parse_item(show_result)
+end
+
+def parse_item(item)
+  # Parsing the output could use some cleaning up, but this works for now.
+  # The output appears to have reasonably consistent structure.
+  # The first line is the SHARE/GROUP\PATH/UNIQUENAME [id: nnnn]
+  # Following lines are Field Name: ...
+  # The Notes field seems to be last, which makes sense since it can be
+  # multi-line. Once it starts, just read everything else into it.
+  note = {}
+  start_notes = false
+
+  item.split("\n").each do |field|
+    if field =~ /(.*) \[id: ([^\]]+)\]/
+      # Ignore the note path and id
+    elsif field =~ /^Notes: (.*)/
+      note['Notes'] = Regexp.last_match(1)
+      start_notes = true
+    elsif start_notes
+      note['Notes'] << "\n"
+      note['Notes'] << field
+    else
+      name, value = field.split(': ')
+      note[name] = value
+    end
+  end
+
+  note
+end
