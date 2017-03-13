@@ -46,6 +46,9 @@ Metrics/BlockLength:
   # Ruduce this... Max: 25
   Max: 95
 
+Metrics/MethodLength:
+  Max: 20
+
 ##################### Bundler #############################
 
 Bundler/DuplicatedGem:

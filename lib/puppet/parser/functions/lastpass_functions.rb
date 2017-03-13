@@ -66,13 +66,13 @@ def get_item_by_uniquename(uniquename)
   parse_item(show_result)
 end
 
+# Parsing the output could use some cleaning up, but this works for now.
+# The output appears to have reasonably consistent structure.
+# The first line is the SHARE/GROUP\PATH/UNIQUENAME [id: nnnn]
+# Following lines are Field Name: ...
+# The Notes field seems to be last, which makes sense since it can be
+# multi-line. Once it starts, just read everything else into it.
 def parse_item(item)
-  # Parsing the output could use some cleaning up, but this works for now.
-  # The output appears to have reasonably consistent structure.
-  # The first line is the SHARE/GROUP\PATH/UNIQUENAME [id: nnnn]
-  # Following lines are Field Name: ...
-  # The Notes field seems to be last, which makes sense since it can be
-  # multi-line. Once it starts, just read everything else into it.
   note = {}
   start_notes = false
 
