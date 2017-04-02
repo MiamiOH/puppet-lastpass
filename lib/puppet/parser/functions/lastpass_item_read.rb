@@ -21,8 +21,5 @@ Puppet::Parser::Functions.newfunction(:lastpass_item_read, :type => :rvalue) do 
 
   login
 
-  id = item_id(folder, name)
-  raise Puppet::ParseError, "error: unable to find id for '#{folder}/#{name}'" unless id
-
-  get_item_by_id(id)
+  get_item_by_uniquename("#{folder}/#{name}")
 end

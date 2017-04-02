@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'English'
 require 'pathname'
+require 'open3'
 
 def check_environment
   user_path = Pathname.new("#{ENV['LPASS_HOME']}/user")
@@ -41,27 +42,42 @@ def sync_type
   sync_type
 end
 
+# This is not very efficient. The ls command only lists the entire contents
+# of a folder. Use of this function has been removed, it is only here for
+# reference. We may want to add a "find" function which can use the basic
+# regex feature (lpass show -G pattern) to find and return IDs.
 def item_id(folder, name)
-  ls_result = `lpass ls --sync=#{sync_type} '#{folder}'`
-  raise Puppet::ParseError, "error: lpass ls '#{folder}': #{ls_result}" unless $CHILD_STATUS.exitstatus.zero?
+  ls_result, error, status = Open3.capture3('lpass', 'ls', "--sync=#{sync_type}", folder)
+
+  raise Puppet::ParseError, "error: lpass ls '#{folder}': #{error}" unless status.success?
 
   ls_result =~ %r{#{Regexp.escape(folder)}/#{Regexp.escape(name)} \[id: ([^\]]+)\]}
 
   Regexp.last_match(1)
 end
 
+def item_exists(uniquename)
+  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}", uniquename)
+
+  return false if !status.success? && error =~ /Could not find specified account/
+  return true if status.success? && show_result =~ /#{Regexp.escape(uniquename)} \[id: [^\]]+\]/
+
+  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}"
+end
+
 def get_item_by_id(id)
-  show_result = `lpass show --sync=#{sync_type} '#{id}'`
-  raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{show_result}" \
-    unless $CHILD_STATUS.exitstatus.zero?
+  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}", id)
+
+  raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{error}" unless status.success?
 
   parse_item(show_result)
 end
 
 def get_item_by_uniquename(uniquename)
-  show_result = `lpass show --sync=#{sync_type} '#{uniquename}'`
-  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{show_result}" \
-    unless $CHILD_STATUS.exitstatus.zero?
+  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}", uniquename)
+
+  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}" \
+    unless status.success?
 
   parse_item(show_result)
 end
@@ -92,4 +108,14 @@ def parse_item(item)
   end
 
   note
+end
+
+def create_item(folder, name, content)
+  add_result, error, status = Open3.capture3('lpass', 'add', "--sync=#{sync_type}", \
+                                             '--non-interactive', \
+                                             '--notes', "#{folder}/#{name}", \
+                                             :stdin_data => content)
+  puts add_result
+  raise Puppet::ParseError, "error: lpass add '#{folder}/#{name}': #{error}" \
+    unless status.success?
 end
