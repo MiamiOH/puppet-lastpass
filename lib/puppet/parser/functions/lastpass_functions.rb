@@ -3,6 +3,8 @@ require 'English'
 require 'pathname'
 require 'open3'
 
+LPASS_FIELD_SEP = '<==>'.freeze
+
 def check_environment
   user_path = Pathname.new("#{ENV['LPASS_HOME']}/user")
   raise Puppet::ParseError, "Expected user file (#{ENV['LPASS_HOME']}/user}) not found" \
@@ -66,7 +68,8 @@ def item_exists(uniquename)
 end
 
 def get_item_by_id(id)
-  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}", id)
+  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
+                                              id, "--format='%fn#{LPASS_FIELD_SEP}%fv'")
 
   raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{error}" unless status.success?
 
@@ -74,7 +77,8 @@ def get_item_by_id(id)
 end
 
 def get_item_by_uniquename(uniquename)
-  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}", uniquename)
+  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
+                                              uniquename, "--format='%fn#{LPASS_FIELD_SEP}%fv'")
 
   raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}" \
     unless status.success?
@@ -90,20 +94,17 @@ end
 # multi-line. Once it starts, just read everything else into it.
 def parse_item(item)
   note = {}
-  start_notes = false
+  field = nil
 
-  item.split("\n").each do |field|
-    if field =~ /(.*) \[id: ([^\]]+)\]/
-      # Ignore the note path and id
-    elsif field =~ /^Notes: (.*)/
-      note['Notes'] = Regexp.last_match(1)
-      start_notes = true
-    elsif start_notes
-      note['Notes'] << "\n"
-      note['Notes'] << field
+  item.split("\n").each do |line|
+    # Ignore the path and id line
+    next if line =~ /(.*) \[id: ([^\]]+)\]/
+
+    if line =~ /#{LPASS_FIELD_SEP}/
+      field, value = line.split(LPASS_FIELD_SEP)
+      note[field] = value
     else
-      name, value = field.split(': ')
-      note[name] = value
+      note[field] << "\n#{line}"
     end
   end
 
