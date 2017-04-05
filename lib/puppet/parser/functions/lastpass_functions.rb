@@ -69,7 +69,7 @@ end
 
 def get_item_by_id(id)
   show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
-                                              id, "--format='%fn#{LPASS_FIELD_SEP}%fv'")
+                                              id, "--format=%fn#{LPASS_FIELD_SEP}%fv")
 
   raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{error}" unless status.success?
 
@@ -78,7 +78,7 @@ end
 
 def get_item_by_uniquename(uniquename)
   show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
-                                              uniquename, "--format='%fn#{LPASS_FIELD_SEP}%fv'")
+                                              uniquename, "--format=%fn#{LPASS_FIELD_SEP}%fv")
 
   raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}" \
     unless status.success?
