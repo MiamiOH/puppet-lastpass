@@ -76,7 +76,7 @@ The lastpass::username and lastpass::password params can be left out and manuall
 
 - *Type*: rvalue
 
-Returns a LastPass vault item as a hash. The result of `lpass show` is converted to hash and returned with the LastPass field names as keys.
+Returns a LastPass vault item as a hash. The result of `lpass show` is converted to hash and returned with the LastPass field names as keys. A Puppet::ParseError error is raised if the specified item does not exist.
 
 *Examples:*
 
@@ -119,6 +119,22 @@ go here'
     }
 ```
 
+### lastpass_item_add
+
+- *Type*: rvalue
+
+Uses the lpass add command to create a new item containing the provided data. Returns the newly created item.
+
+*Examples:*
+
+When called as:
+
+```puppet
+    $item_data = {'username' => 'bob', password => 'secr3t'}
+    $new_item = lastpass_item_add('php\db', 'courselist_development', $item_data)
+```
+
+Will create the item as a generic note, saving the data in the Notes field as YAML. The new object will be returned consistent with the handling of generic notes.
 
 ## Reference
  - [**Public Classes**](#public-classes)
@@ -142,6 +158,8 @@ Installs and configures LastPass CLI.
 - `user_username`: [String] The LastPass username for automated login. Requires the user_home parameter. Defaults to undef.
 - `user_password`: [String] The LastPass password for automated login. Requires the user_home parameter. Defaults to undef.
 - `user_agent_timeout`: [Integer] The agent timeout in seconds after which relogin is required. Setting this to 0 disables the timeout. Defaults to 3600.
+- `user_sync_type`: [string] The sync option value to use with lpass commands which support sync. Must be one of 'auto', 'now', or 'no'. Defaults to auto.
+- `user_auto_sync_time`: [Integer]  Defaults to undef.
 
 ### Private Classes
 
