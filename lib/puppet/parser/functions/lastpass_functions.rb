@@ -18,22 +18,22 @@ def check_environment
 end
 
 def check_lpass
-  cmd = `which lpass`
-  raise Puppet::ParseError, 'lpass command not found' if cmd.empty?
-  version = `lpass --version`.strip
+  which_result, _error, _status = Open3.capture3('which', 'lpass')
+  raise Puppet::ParseError, 'lpass command not found' if which_result.empty?
+  version, _error, _status = Open3.capture3('lpass', '--version')
   raise Puppet::ParseError, "unexpected lpass version: #{version}" unless version =~ /v1.1.2$/
 end
 
 def login
   check_environment
 
-  status = `lpass status`.strip
+  lpass_status, error, status = Open3.capture3('lpass', 'status')
 
-  return status if $CHILD_STATUS.exitstatus.zero?
+  return lpass_status if status.success?
 
-  raise Puppet::ParseError, "error: lpass status: #{status}" unless status == 'Not logged in.'
-  login_result = `lpasslogin`
-  raise Puppet::ParseError, "error: lpass login: #{login_result}" unless login_result =~ /^Success:/
+  raise Puppet::ParseError, "error: lpass status: #{error}" unless lpass_status == 'Not logged in.'
+  _login_result, error, status = Open3.capture3('lpasslogin')
+  raise Puppet::ParseError, "error: lpass login: #{error}" unless status.success?
 end
 
 def sync_type
@@ -67,6 +67,8 @@ def item_exists(uniquename)
   raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}"
 end
 
+# Items can be retreived by ID or UniqueName using the following functions.
+# The get_ functions will throw an exception if the item is not found.
 def get_item_by_id(id)
   show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
                                               id, "--format=%fn#{LPASS_FIELD_SEP}%fv")
@@ -86,12 +88,11 @@ def get_item_by_uniquename(uniquename)
   parse_item(show_result)
 end
 
-# Parsing the output could use some cleaning up, but this works for now.
 # The output appears to have reasonably consistent structure.
 # The first line is the SHARE/GROUP\PATH/UNIQUENAME [id: nnnn]
-# Following lines are Field Name: ...
-# The Notes field seems to be last, which makes sense since it can be
-# multi-line. Once it starts, just read everything else into it.
+# The following lines will contain key/value pairs separated by
+# our defined field separator. The values may be multi-line, so
+# subsequent lines are appended to the key currently being read.
 def parse_item(item)
   note = {}
   field = nil
@@ -112,11 +113,11 @@ def parse_item(item)
 end
 
 def create_item(folder, name, content)
-  add_result, error, status = Open3.capture3('lpass', 'add', "--sync=#{sync_type}", \
-                                             '--non-interactive', \
-                                             '--notes', "#{folder}/#{name}", \
-                                             :stdin_data => content)
-  puts add_result
+  _add_result, error, status = Open3.capture3('lpass', 'add', "--sync=#{sync_type}", \
+                                              '--non-interactive', \
+                                              '--notes', "#{folder}/#{name}", \
+                                              :stdin_data => content)
+
   raise Puppet::ParseError, "error: lpass add '#{folder}/#{name}': #{error}" \
     unless status.success?
 end

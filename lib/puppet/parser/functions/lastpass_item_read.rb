@@ -4,7 +4,8 @@ require 'English'
 
 require_relative 'lastpass_functions'
 
-# Retrieves from a LastPass secure note
+# Retrieves from a LastPass secure note. Throws an exception if the item
+# does not exist.
 #
 # Useful for having data that is managed via LastPass and shared with Puppet.
 #
