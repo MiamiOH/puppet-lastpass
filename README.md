@@ -62,7 +62,7 @@ The lastpass class can configure a user for automated login during provisioning.
 class { 'lastpass':
   user               => 'root',
   group              => 'root',
-  user_home          => "${::root_home}/.lpass",
+  config_dir         => "${::root_home}/.lpass",
   user_username      => 'lpassuser@example.com',
   user_password      => 'lpass_master_pw',
   user_agent_timeout => 0,
@@ -84,11 +84,11 @@ Returns a LastPass vault item as a hash. The result of `lpass show` is converted
   php\db/courselist_development [id: 7699093785340133506]
   Username: cf_opencourse
   Password: secr3t
-  Alias: 
+  Alias:
   SID: DEVL
   Database: DEVL
-  Port: 
-  Hostname: 
+  Port:
+  Hostname:
   Type: oracle
   NoteType: Database
   Notes: db notes
@@ -152,11 +152,11 @@ Installs and configures LastPass CLI.
 - `manage_package`: [Boolean] Manage the LastPass CLI package. You must configure the appropriate repo. Defaults to true.
 - `package`: [String] The name of the LastPass CLI package to install. Defaults to 'lastpass-cli'.
 - `lpass_home`: [String] The string to set as the $LASTPASS_HOME value in the profile script. Should work for any logged in user. Defaults to '$HOME/.lpass'.
-- `user`: [String] The user to be configured for non-interactive lpass use. Requires that lastpass::user_home and lastpass::group be set. The module does NOT create this user.
-- `group`: [String] The group that will own lastpass::user_home.
-- `user_home`: [String] A valid path corresponding to $LASTPASS_HOME for lastpass::user. The username and password will be written to the corresponding files at this location. Defaults to undef.
-- `user_username`: [String] The LastPass username for automated login. Requires the user_home parameter. Defaults to undef.
-- `user_password`: [String] The LastPass password for automated login. Requires the user_home parameter. Defaults to undef.
+- `user`: [String] The user to be configured for non-interactive lpass use. Requires that lastpass::config_dir and lastpass::group be set. The module does NOT create this user.
+- `group`: [String] The group that will own lastpass::config_dir.
+- `config_dir`: [String] A valid path corresponding to $LASTPASS_HOME for lastpass::user. The username and password will be written to the corresponding files at this location. Defaults to undef.
+- `user_username`: [String] The LastPass username for automated login. Requires the config_dir parameter. Defaults to undef.
+- `user_password`: [String] The LastPass password for automated login. Requires the config_dir parameter. Defaults to undef.
 - `user_agent_timeout`: [Integer] The agent timeout in seconds after which relogin is required. Setting this to 0 disables the timeout. Defaults to 3600.
 - `user_sync_type`: [string] The sync option value to use with lpass commands which support sync. Must be one of 'auto', 'now', or 'no'. Defaults to auto.
 - `user_auto_sync_time`: [Integer]  Defaults to undef.

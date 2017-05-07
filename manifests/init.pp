@@ -5,10 +5,10 @@
 class lastpass (
   $manage_package      = true,
   $package             = $lastpass::params::package,
-  $lpass_home          = "\$HOME/.lpass",
+  $lpass_home          = '$HOME/.lpass',
   $user                = undef,
   $group               = undef,
-  $user_home           = undef,
+  $config_dir          = undef,
   $user_username       = undef,
   $user_password       = undef,
   $user_agent_timeout  = 3600,
@@ -16,24 +16,24 @@ class lastpass (
   $user_auto_sync_time = undef,
 ) inherits lastpass::params {
 
-  if $user and !$user_home {
-    fail('Missing lastpass::user_home for lastpass::user')
+  if $user and !$config_dir {
+    fail('Missing lastpass::config_dir for lastpass::user')
   }
-  
+
   if $user and !$group {
     fail('Missing lastpass::group for lastpass::user')
   }
 
-  if $user_home and !$user {
-    fail('Missing lastpass::user for lastpass::user_home')
+  if $config_dir and !$user {
+    fail('Missing lastpass::user for lastpass::config_dir')
   }
 
-  if $user_password and !$user_home {
-    fail('Cannot set lastpass::user_password without lastpass::user_home')
+  if $user_password and !$config_dir {
+    fail('Cannot set lastpass::user_password without lastpass::config_dir')
   }
 
-  if $user_username and !$user_home {
-    fail('Cannot set lastpass::user_username without lastpass::user_home')
+  if $user_username and !$config_dir {
+    fail('Cannot set lastpass::user_username without lastpass::config_dir')
   }
 
   validate_re($user_sync_type, '^(auto|now|no)$',
@@ -61,50 +61,50 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasslogin",
   }
 
-  if $user_home {
-    file { $user_home:
+  if $config_dir {
+    file { $config_dir:
       ensure => directory,
       owner  => $user,
       group  => $group,
       mode   => '0600',
     } ->
 
-    file { "${user_home}/env":
+    file { "${config_dir}/env":
       ensure  => file,
       content => template("${module_name}/user_env.erb"),
     }
   }
 
   if $user_password {
-    file { "${user_home}/pw":
+    file { "${config_dir}/pw":
       ensure  => file,
       owner   => $user,
       group   => $group,
       mode    => '0600',
       content => $user_password,
-      require => File[$user_home],
+      require => File[$config_dir],
     }
   }
 
   if $user_username {
-    file { "${user_home}/user":
+    file { "${config_dir}/user":
       ensure  => file,
       owner   => $user,
       group   => $group,
       mode    => '0644',
       content => $user_username,
-      require => File[$user_home],
+      require => File[$config_dir],
     }
   }
 
   if $user_sync_type {
-    file { "${user_home}/sync":
+    file { "${config_dir}/sync":
       ensure  => file,
       owner   => $user,
       group   => $group,
       mode    => '0644',
       content => $user_sync_type,
-      require => File[$user_home],
+      require => File[$config_dir],
     }
   }
 
