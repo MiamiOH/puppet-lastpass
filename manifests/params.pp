@@ -6,16 +6,16 @@
 class lastpass::params {
 
   case $::osfamily {
-    'redhat': {
+    'RedHat': {
       if $::operatingsystemmajrelease != '7' {
-        fail('Unsupported redhat family version')
+        fail("Unsupported RedHat family version: ${::operatingsystemmajrelease}")
       }
 
       $package = 'lastpass-cli'
 
     }
     default: {
-      fail('Unsupported osfamily')
+      fail("Unsupported osfamily: ${::osfamily}")
     }
   }
 
