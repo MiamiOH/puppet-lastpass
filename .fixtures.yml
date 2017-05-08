@@ -3,5 +3,6 @@ fixtures:
     stdlib: "https://github.com/puppetlabs/puppetlabs-stdlib.git"
     profiled: "https://github.com/unibet/puppet-profiled.git"
     augeasproviders_shellvar: "https://github.com/hercules-team/augeasproviders_shellvar.git"
+    augeasproviders_core: "https://github.com/hercules-team/augeasproviders_core.git"
   symlinks:
     lastpass: "#{source_dir}"
