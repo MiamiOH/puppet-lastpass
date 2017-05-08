@@ -12,6 +12,7 @@ https://github.com/lastpass/lastpass-cli
     - [Setup requirements](#setup-requirements)
     - [Beginning with lastpass](#beginning-with-lastpass)
 3. [Usage - Configuration options and additional functionality](#usage)
+    - [Setting configuration options](#setting-configuration-options)
     - [Automated login](#automated-login)
     - [lastpass_item_read](#lastpass_item_read)
 4. [Reference](#reference)
@@ -50,6 +51,27 @@ class { 'lastpass': }
 ```
 
 Once installed, the lpass command is available as documented on the [user guide](https://lastpass.github.io/lastpass-cli/lpass.1.html).
+
+### Setting configuration options
+
+Lastpass is configured with environment variables. You can optionally set them in $LASTPASS_HOME/env.  
+A defined type is provided to manage these settings.
+
+```puppet
+lastpass::config { 'LPASS_AGENT_TIMEOUT':
+  ensure => present,
+  value  => 3600,
+}
+
+lastpass::config {
+  'agent_timeout':  value => 3600;
+  'auto_sync_time': value => 5;
+}
+
+lastpass::config { 'LPASS_AGENT_TIMEOUT':
+  ensure => absent,
+}
+```
 
 ### Automated login
 
