@@ -1,19 +1,20 @@
 # Class: lastpass
 #
 # This class installs the LastPass CLI and provides functions to interact with it.
+#
 
 class lastpass (
-  $manage_package      = true,
-  $package             = $lastpass::params::package,
-  $lpass_home          = '$HOME/.lpass',
-  $user                = undef,
-  $group               = undef,
-  $config_dir          = undef,
-  $user_username       = undef,
-  $user_password       = undef,
-  $user_agent_timeout  = 3600,
-  $user_sync_type      = 'auto',
-  $user_auto_sync_time = undef,
+  $manage_package = true,
+  $package        = $lastpass::params::package,
+  $lpass_home     = '$HOME/.lpass',
+  $user           = undef,
+  $group          = undef,
+  $config_dir     = undef,
+  $username       = undef,
+  $password       = undef,
+  $agent_timeout  = undef,
+  $sync_type      = undef,
+  $auto_sync_time = undef,
 ) inherits lastpass::params {
 
   if $user and !$config_dir {
@@ -28,16 +29,18 @@ class lastpass (
     fail('Missing lastpass::user for lastpass::config_dir')
   }
 
-  if $user_password and !$config_dir {
-    fail('Cannot set lastpass::user_password without lastpass::config_dir')
+  if $password and !$config_dir {
+    fail('Cannot set lastpass::password without lastpass::config_dir')
   }
 
-  if $user_username and !$config_dir {
-    fail('Cannot set lastpass::user_username without lastpass::config_dir')
+  if $username and !$config_dir {
+    fail('Cannot set lastpass::username without lastpass::config_dir')
   }
 
-  validate_re($user_sync_type, '^(auto|now|no)$',
-  "Sync type ${user_sync_type} is not valid, use one of auto, now or no")
+  unless $sync_type == undef {
+    validate_re($sync_type, '^(auto|now|no)$',
+    "Sync type ${sync_type} is not valid, use one of auto, now or no")
+  }
 
   if $manage_package {
     package { $package:
@@ -61,57 +64,24 @@ class lastpass (
     source => "puppet:///modules/${module_name}/lpasslogin",
   }
 
-  if $config_dir {
-    file { $config_dir:
-      ensure => directory,
-      owner  => $user,
-      group  => $group,
-      mode   => '0600',
-    } ->
-
-    file { "${config_dir}/env":
-      ensure  => file,
-      content => template("${module_name}/user_env.erb"),
-    }
+  lastpass::config {
+    'username': value => $username, file => 'login';
+    'password': value => $password, file => 'login';
   }
 
-  if $user_password {
-    file { "${config_dir}/pw":
-      ensure  => file,
-      owner   => $user,
-      group   => $group,
-      mode    => '0600',
-      content => $user_password,
-      require => File[$config_dir],
-    }
+  if $password {
+    lastpass::config { 'askpass': value => '/usr/local/bin/lpasspw' }
   }
 
-  if $user_username {
-    file { "${config_dir}/user":
-      ensure  => file,
-      owner   => $user,
-      group   => $group,
-      mode    => '0644',
-      content => $user_username,
-      require => File[$config_dir],
-    }
-  }
-
-  if $user_sync_type {
-    file { "${config_dir}/sync":
-      ensure  => file,
-      owner   => $user,
-      group   => $group,
-      mode    => '0644',
-      content => $user_sync_type,
-      require => File[$config_dir],
-    }
+  lastpass::config {
+    'agent_timeout':  value => $agent_timeout;
+    'sync_type':      value => $sync_type;
+    'auto_sync_time': value => $auto_sync_time;
   }
 
   profiled::script { 'lpass.sh':
     ensure  => file,
-    content => template("${module_name}/lpass.sh.erb"),
+    content => "export LPASS_HOME=${lpass_home}",
     shell   => 'absent',
   }
-
 }

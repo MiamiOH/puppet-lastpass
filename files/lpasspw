@@ -1,4 +1,13 @@
 #!/bin/bash
-echo -n "$*: " >/dev/null
-answer=`cat $LPASS_HOME/pw`
-echo $answer
+if [ -f "$LPASS_HOME/login" ]; then
+    source "$LPASS_HOME/login"
+
+    echo -n "$*: " >/dev/null
+    echo $LPASS_PASSWORD
+else
+    echo -n "$*: " >/dev/stderr
+    stty -echo
+    read answer
+    stty echo
+    echo $answer
+fi

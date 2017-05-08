@@ -1,18 +1,18 @@
-require 'fileutils'
-require 'English'
-require 'pathname'
 require 'open3'
 
 LPASS_FIELD_SEP = '<==>'.freeze
 
 def check_environment
-  user_path = Pathname.new("#{ENV['LPASS_HOME']}/user")
-  raise Puppet::ParseError, "Expected user file (#{ENV['LPASS_HOME']}/user}) not found" \
-    unless user_path.exist?
+  raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login}) not found" \
+    unless File.file?("#{ENV['LPASS_HOME']}/login")
 
-  pw_path = Pathname.new("#{ENV['LPASS_HOME']}/pw")
-  raise Puppet::ParseError, "Expected password file (#{ENV['LPASS_HOME']}/pw}) not found" \
-    unless pw_path.exist?
+  # assumes the following format
+  #  NAME1=value1
+  #  NAME2=value2
+  File.readline "#{ENV['LPASS_HOME']}/env" do |line|
+    key, value = line.split '='
+    ENV[key] = value
+  end
 
   check_lpass
 end
@@ -37,7 +37,7 @@ def login
 end
 
 def sync_type
-  sync_type = ENV['LPASS_USER_SYNC_TYPE'] || 'auto'
+  sync_type = ENV['LPASS_SYNC_TYPE'] || 'auto'
   raise Puppet::ParseError, "Invalid sync type #{sync_type} (now, auto, no)" \
     unless sync_type =~ /^(now|auto|no)$/
 
