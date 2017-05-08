@@ -3,6 +3,7 @@
 #
 # Uses shellvar to add/alter/remove options in lpass
 # configuation file.
+# http://lastpass.github.io/lastpass-cli/lpass.1.html
 #
 # === Parameters
 #
@@ -46,26 +47,26 @@ define lastpass::config (
   }
 
   if ($value != undef) or ($ensure == 'absent') {
-    ensure_resource('file', $lastpass::config_dir, {
+    ensure_resource('file', $lastpass::_config_dir, {
         ensure => directory,
         owner  => $lastpass::user,
-        group  => $lastpass::group,
+        group  => $lastpass::_group,
         mode   => '0700',
     })
 
-    ensure_resource('file', "${lastpass::config_dir}/${file}", {
+    ensure_resource('file', "${lastpass::_config_dir}/${file}", {
         ensure => file,
         owner  => $lastpass::user,
-        group  => $lastpass::group,
+        group  => $lastpass::_group,
         mode   => '0600',
     })
 
     shellvar { "lastpass-config-${title}":
       ensure   => $ensure,
-      target   => "${lastpass::config_dir}/${file}",
+      target   => "${lastpass::_config_dir}/${file}",
       variable => $variable,
       value    => $value,
-      require  => File["${lastpass::config_dir}/${file}"],
+      require  => File["${lastpass::_config_dir}/${file}"],
     }
   }
 }

@@ -7,7 +7,7 @@ class lastpass (
   $manage_package = true,
   $package        = $lastpass::params::package,
   $lpass_home     = '$HOME/.lpass',
-  $user           = undef,
+  $user           = 'root',
   $group          = undef,
   $config_dir     = undef,
   $username       = undef,
@@ -17,24 +17,17 @@ class lastpass (
   $auto_sync_time = undef,
 ) inherits lastpass::params {
 
-  if $user and !$config_dir {
-    fail('Missing lastpass::config_dir for lastpass::user')
+  $_group = $group ? {
+    undef   => $user,
+    default => $group,
   }
 
-  if $user and !$group {
-    fail('Missing lastpass::group for lastpass::user')
-  }
-
-  if $config_dir and !$user {
-    fail('Missing lastpass::user for lastpass::config_dir')
-  }
-
-  if $password and !$config_dir {
-    fail('Cannot set lastpass::password without lastpass::config_dir')
-  }
-
-  if $username and !$config_dir {
-    fail('Cannot set lastpass::username without lastpass::config_dir')
+  $_config_dir = $config_dir ? {
+    undef   => $user ? {
+      'root'  => "/${user}/.lpass",
+      default => "/home/${user}/.lpass",
+    },
+    default => $config_dir,
   }
 
   unless $sync_type == undef {
