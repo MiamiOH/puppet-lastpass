@@ -6,12 +6,14 @@ def check_environment
   raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login}) not found" \
     unless File.file?("#{ENV['LPASS_HOME']}/login")
 
-  # assumes the following format
-  #  NAME1=value1
-  #  NAME2=value2
-  File.readline "#{ENV['LPASS_HOME']}/env" do |line|
-    key, value = line.split '='
-    ENV[key] = value
+  if File.file?("#{ENV['LPASS_HOME']}/env")
+    # assumes the following format
+    #  NAME1=value1
+    #  NAME2=value2
+    File.readlines("#{ENV['LPASS_HOME']}/env").each do |line|
+      key, value = line.split '='
+      ENV[key] = value
+    end
   end
 
   check_lpass
