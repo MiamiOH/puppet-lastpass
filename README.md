@@ -75,7 +75,7 @@ lastpass::config { 'LPASS_AGENT_TIMEOUT':
 
 ### Automated login
 
-The module provides two helper scripts to facilitate automated login for unattended systems. These scripts require the LastPass username and password be stored in $LPASS_HOME/login. The module will create this if the username and password parameters are provided, or this can be created manually for the desired user. The default value of $LPASS_HOME is '$HOME/.lpass'.
+The module provides two helper scripts to facilitate automated login for unattended systems. These scripts require the LastPass username and password be stored in $LPASS_HOME/login. You also need to set $LPASS_ASKPASS in $LPASS_HOME/env. The module will create all of this if the username and password parameters are provided, or this can be created manually for the desired user. The default value of $LPASS_HOME is '$HOME/.lpass'.
 
 $LPASS_HOME/login should contain these two env vars for the scripts to work
 ```script
@@ -83,7 +83,12 @@ LPASS_USERNAME=lpassuser@example.com
 LPASS_PASSWORD=lpass_master_pw
 ```
 
-The lpasslogin script will read the $LPASS_HOME/login file and run 'lpass login $LPASS_USERNAME'. If lastpass::password is present, the profile script installed by the module will set $LPASS_ASKPASS to the lpasspw script, which reads $LPASS_HOME/login and prints $LPASS_PASSWORD it to STDOUT in response to the CLI.
+$LPASS_HOME/env should contain this pointing to the lpasspw script
+```script
+LPASS_ASKPASS=/usr/local/bin/lpasspw
+```
+
+The lpasslogin script will read the $LPASS_HOME/login file and run 'lpass login $LPASS_USERNAME'. If lastpass::password is present, the  module will set $LPASS_ASKPASS to the lpasspw script, which reads $LPASS_HOME/login and prints $LPASS_PASSWORD it to STDOUT in response to the CLI.
 
 The lastpass class can configure a user for automated login during provisioning. To configure the root user for example:
 ```puppet
