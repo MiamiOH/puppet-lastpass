@@ -33,7 +33,7 @@ def login
 
   return lpass_status if status.success?
 
-  raise Puppet::ParseError, "error: lpass status: #{error}" unless lpass_status == 'Not logged in.'
+  raise Puppet::ParseError, "error: lpass status: #{error}" unless lpass_status =~ /^Not logged in/
   _login_result, error, status = Open3.capture3('lpasslogin')
   raise Puppet::ParseError, "error: lpass login: #{error}" unless status.success?
 end
