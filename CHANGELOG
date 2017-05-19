@@ -1,2 +1,7 @@
+2017-05-19 (1.1.0)  Dirk Tepe
+        * (Breaking change) Refactor handling of credentials for non-interactive login
+        * (Breaking change) Refactor class param names
+        * Add config class
+
 2017-05-05 (1.0.0)  Dirk Tepe
         * Initial release
