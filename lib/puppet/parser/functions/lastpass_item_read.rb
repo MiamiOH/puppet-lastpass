@@ -1,7 +1,3 @@
-require 'fileutils'
-require 'yaml'
-require 'English'
-
 require_relative 'lastpass_functions'
 
 # Retrieves from a LastPass secure note. Throws an exception if the item

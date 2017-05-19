@@ -1,6 +1,6 @@
 #!/bin/bash
-if [ -f "$LPASS_HOME/user" ]; then
-    username=`cat $LPASS_HOME/user`
+if [ -f "$LPASS_HOME/login" ]; then
+    source "$LPASS_HOME/login"
 fi
 
-lpass login $username
+lpass login $LPASS_USERNAME

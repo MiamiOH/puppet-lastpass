@@ -1,18 +1,20 @@
-require 'fileutils'
-require 'English'
-require 'pathname'
 require 'open3'
 
 LPASS_FIELD_SEP = '<==>'.freeze
 
 def check_environment
-  user_path = Pathname.new("#{ENV['LPASS_HOME']}/user")
-  raise Puppet::ParseError, "Expected user file (#{ENV['LPASS_HOME']}/user}) not found" \
-    unless user_path.exist?
+  raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login}) not found" \
+    unless File.file?("#{ENV['LPASS_HOME']}/login")
 
-  pw_path = Pathname.new("#{ENV['LPASS_HOME']}/pw")
-  raise Puppet::ParseError, "Expected password file (#{ENV['LPASS_HOME']}/pw}) not found" \
-    unless pw_path.exist?
+  if File.file?("#{ENV['LPASS_HOME']}/env")
+    # assumes the following format
+    #  NAME1=value1
+    #  NAME2=value2
+    File.readlines("#{ENV['LPASS_HOME']}/env").each do |line|
+      key, value = line.split '='
+      ENV[key] = value
+    end
+  end
 
   check_lpass
 end
@@ -31,13 +33,13 @@ def login
 
   return lpass_status if status.success?
 
-  raise Puppet::ParseError, "error: lpass status: #{error}" unless lpass_status == 'Not logged in.'
+  raise Puppet::ParseError, "error: lpass status: #{error}" unless lpass_status =~ /^Not logged in/
   _login_result, error, status = Open3.capture3('lpasslogin')
   raise Puppet::ParseError, "error: lpass login: #{error}" unless status.success?
 end
 
 def sync_type
-  sync_type = ENV['LPASS_USER_SYNC_TYPE'] || 'auto'
+  sync_type = ENV['LPASS_SYNC_TYPE'] || 'auto'
   raise Puppet::ParseError, "Invalid sync type #{sync_type} (now, auto, no)" \
     unless sync_type =~ /^(now|auto|no)$/
 

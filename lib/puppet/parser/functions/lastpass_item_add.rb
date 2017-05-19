@@ -1,7 +1,3 @@
-require 'fileutils'
-require 'yaml'
-require 'English'
-
 require_relative 'lastpass_functions'
 
 # Adds a LastPass generic secure note
