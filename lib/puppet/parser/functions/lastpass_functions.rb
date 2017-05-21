@@ -3,20 +3,28 @@ require 'open3'
 LPASS_FIELD_SEP = '<==>'.freeze
 
 def check_environment
+  import_env_file('/etc/profile.d/lpass.sh')
   raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login}) not found" \
     unless File.file?("#{ENV['LPASS_HOME']}/login")
+  import_env_file("#{ENV['LPASS_HOME']}/env")
+  check_lpass
+end
 
-  if File.file?("#{ENV['LPASS_HOME']}/env")
-    # assumes the following format
-    #  NAME1=value1
-    #  NAME2=value2
-    File.readlines("#{ENV['LPASS_HOME']}/env").each do |line|
+# assumes the following format
+#  export NAME1=value1
+#  export NAME2=value2
+# or
+#  NAME1=value1
+#  NAME2=value2
+def import_env_file(path)
+  if File.file?(path)
+    File.readlines(path).each do |line|
+      next if line.start_with?('#') || line.strip.empty?
+      line.gsub(/export /, '')
       key, value = line.split '='
       ENV[key] = value
     end
   end
-
-  check_lpass
 end
 
 def check_lpass
