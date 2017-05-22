@@ -17,13 +17,13 @@ end
 #  NAME1=value1
 #  NAME2=value2
 def import_env_file(path)
-  if File.file?(path)
-    File.readlines(path).each do |line|
-      next if line.start_with?('#') || line.strip.empty?
-      line.gsub(/export /, '')
-      key, value = line.split '='
-      ENV[key] = value
-    end
+  return unless File.file?(path)
+
+  File.readlines(path).each do |line|
+    next if line.start_with?('#') || line.strip.empty?
+    line.gsub(/export /, '')
+    key, value = line.split '='
+    ENV[key] = value
   end
 end
 
