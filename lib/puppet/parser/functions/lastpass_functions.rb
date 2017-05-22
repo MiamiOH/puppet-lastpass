@@ -21,8 +21,7 @@ def import_env_file(path)
 
   File.readlines(path).each do |line|
     next if line.start_with?('#') || line.strip.empty?
-    line.gsub(/export /, '')
-    key, value = line.split '='
+    key, value = line.sub(/^[\s\t]*export[\s\t]*/, '').split('=')
     ENV[key] = value
   end
 end
