@@ -10,6 +10,8 @@
 # [*name*]   - name of the parameter.
 # [*ensure*] - present/absent/exported. defaults to present.
 # [*value*]  - value of the parameter.
+# [*file*]   - the file in $lastpass::config_dir to manage. defaults to 'env'.
+# [*munge*]  - manipulate variable name (add LPASS_ and upcase). defaults to true.
 #
 # === Requires
 #
