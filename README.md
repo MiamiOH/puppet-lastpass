@@ -25,7 +25,7 @@ https://github.com/lastpass/lastpass-cli
 
 ## Description
 
-The `lastpass` module installs and configures the [LastPass CLI](https://github.com/lastpass/lastpass-cli) maintained) by LastPass. The module installs the CLI and some supporting scripts to allow any user to run the lpass commands from the shell. The module also provides a Puppet function which enables access to a LastPass vault from within Puppet.
+The `lastpass` module installs and configures the [LastPass CLI](https://github.com/lastpass/lastpass-cli) maintained by LastPass. The module installs the CLI and some supporting scripts to allow any user to run the lpass commands from the shell. The module also provides a Puppet function which enables access to a LastPass vault from within Puppet.
 
 ## Setup
 
@@ -35,7 +35,7 @@ The `lastpass` module installs the LastPass CLI package, supporting shell script
 
 ### Setup Requirements
 
-The `lastpass` module only supports Centos 7 at this time. The module depends on [`puppetlabs/stdlib`](https://forge.puppetlabs.com/puppetlabs/stdlib), and on [`unibet/profiled`](https://forge.puppet.com/unibet/profiled).
+The `lastpass` module only supports Centos 7 at this time. The module depends on [`puppetlabs/stdlib`](https://forge.puppetlabs.com/puppetlabs/stdlib), [`unibet/profiled`](https://forge.puppet.com/unibet/profiled), and [`herculesteam/augeasproviders_shellvar`](https://forge.puppet.com/herculesteam/augeasproviders_shellvar).
 
 The module assumes that LastPass CLI is available as an RPM from a configured repository. At this time, the most recent version of the CLI available is 0.9.0, which does not contain features required by the module. You can disable package management in the module and install an appropriate version of the LastPass CLI (>=1.1.2) through any means you want.
 
@@ -176,13 +176,13 @@ The LastPass CLI uses https to access the LastPass API. If you must use an http 
 
 ```puppet
 lastpass::config {
-  'http_proxy': 
-    ensure => present, 
-    value => 'https://proxy.example.com', 
+  'http_proxy':
+    ensure => present,
+    value => 'https://proxy.example.com',
     munge => false;
-  'https_proxy': 
-    ensure => present, 
-    value => 'https://proxy.example.com', 
+  'https_proxy':
+    ensure => present,
+    value => 'https://proxy.example.com',
     munge => false;
 }
 ```
