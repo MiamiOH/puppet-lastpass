@@ -15,6 +15,7 @@ https://github.com/lastpass/lastpass-cli
     - [Setting configuration options](#setting-configuration-options)
     - [Automated login](#automated-login)
     - [lastpass_item_read](#lastpass_item_read)
+    - [Using LastPass Behind a Proxy](#http_proxy)
 4. [Reference](#reference)
     - [Public Classes](#public-classes)
     - [Private Classes](#private-classes)
@@ -168,6 +169,24 @@ When called as:
 ```
 
 Will create the item as a generic note, saving the data in the Notes field as YAML. The new object will be returned consistent with the handling of generic notes.
+
+## Using LastPass Behind a Proxy
+
+The LastPass CLI uses https to access the LastPass API. If you must use an http proxy, the CLI does use the http_proxy environment variables. This works fine if you are running a foreground process, but background processes may not have the variable set. You can use the lastpass::config type to add you proxy settings to the lastpass env:
+
+```puppet
+lastpass::config {
+  'http_proxy': 
+    ensure => present, 
+    value => 'https://proxy.example.com', 
+    munge => false;
+  'https_proxy': 
+    ensure => present, 
+    value => 'https://proxy.example.com', 
+    munge => false;
+}
+```
+Refer to the documentation on the lastpass::config class for details.
 
 ## Reference
  - [**Public Classes**](#public-classes)
