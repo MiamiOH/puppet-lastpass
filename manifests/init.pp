@@ -7,7 +7,7 @@ class lastpass (
   $manage_package = true,
   $package        = $lastpass::params::package,
   $lpass_home     = '$HOME/.lpass',
-  $user           = 'root',
+  $user           = 'puppet',
   $group          = undef,
   $config_dir     = undef,
   $username       = undef,
@@ -24,8 +24,9 @@ class lastpass (
 
   $_config_dir = $config_dir ? {
     undef   => $user ? {
-      'root'  => "/${user}/.lpass",
-      default => "/home/${user}/.lpass",
+      'puppet' => "${::puppet_vardir}/.lpass",
+      'root'   => "${::root_home}/.lpass",
+      default  => "/home/${user}/.lpass",
     },
     default => $config_dir,
   }

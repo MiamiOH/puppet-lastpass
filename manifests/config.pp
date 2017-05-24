@@ -10,6 +10,8 @@
 # [*name*]   - name of the parameter.
 # [*ensure*] - present/absent/exported. defaults to present.
 # [*value*]  - value of the parameter.
+# [*file*]   - the file in $lastpass::config_dir to manage. defaults to 'env'.
+# [*munge*]  - manipulate variable name (add LPASS_ and upcase). defaults to true.
 #
 # === Requires
 #
@@ -36,11 +38,14 @@ define lastpass::config (
   $ensure = present,
   $value  = undef,
   $file   = 'env',
+  $munge  = true,
 ) {
 
   include '::lastpass'
 
-  if $name =~ /(?i:^LPASS_)/ {
+  if ! $munge {
+    $variable = $name
+  } elsif $name =~ /(?i:^LPASS_)/ {
     $variable = upcase($name)
   } else {
     $variable = upcase("LPASS_${name}")

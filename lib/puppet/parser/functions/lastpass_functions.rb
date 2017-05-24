@@ -3,20 +3,39 @@ require 'open3'
 LPASS_FIELD_SEP = '<==>'.freeze
 
 def check_environment
+  evaluate_env_file('/etc/profile.d/lpass.sh', 'LPASS_HOME')
   raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login}) not found" \
     unless File.file?("#{ENV['LPASS_HOME']}/login")
-
-  if File.file?("#{ENV['LPASS_HOME']}/env")
-    # assumes the following format
-    #  NAME1=value1
-    #  NAME2=value2
-    File.readlines("#{ENV['LPASS_HOME']}/env").each do |line|
-      key, value = line.split '='
-      ENV[key] = value
-    end
-  end
-
+  import_env_file("#{ENV['LPASS_HOME']}/env")
   check_lpass
+end
+
+# assumes the following format
+#  export NAME1=value1
+#  export NAME2=value2
+# or
+#  NAME1=value1
+#  NAME2=value2
+#
+# NOTE: Does not interpret values with other shell variables
+def import_env_file(path)
+  return unless File.file?(path)
+  File.readlines(path).each do |line|
+    next if line.start_with?('#') || line.strip.empty?
+    key, value = line.sub(/^[\s\t]*export[\s\t]*/, '').split('=', 2)
+    ENV[key] = value unless value.nil? || value.empty?
+  end
+end
+
+# Actually evaluates a bash shell script for exported env vars
+# You must list the vars you are looking for
+def evaluate_env_file(path, vars)
+  return unless File.file?(path)
+  Array(vars).each do |var|
+    next if ENV[var]
+    value = `source #{path} 2> /dev/null && echo $#{var}`.chomp
+    ENV[var] = value unless value.nil? || value.empty?
+  end
 end
 
 def check_lpass
