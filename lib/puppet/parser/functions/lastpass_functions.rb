@@ -23,7 +23,8 @@ def import_env_file(path)
   File.readlines(path).each do |line|
     next if line.start_with?('#') || line.strip.empty?
     key, value = line.sub(/^[\s\t]*export[\s\t]*/, '').split('=', 2)
-    ENV[key] = value unless value.nil? || value.empty?
+    next unless key.start_with?('LPASS_') # we don't want things like http_proxy
+    ENV[key] = value.chomp unless value.nil? || value.empty?
   end
 end
 
