@@ -1,6 +1,5 @@
-require 'open3'
-
 LPASS_FIELD_SEP = '<==>'.freeze
+EXECUTE_OPTIONS = {:failonfail => false, :combine => true}.freeze
 
 def check_environment
   evaluate_env_file('/etc/profile.d/lpass.sh', 'LPASS_HOME')
@@ -23,7 +22,7 @@ def import_env_file(path)
   File.readlines(path).each do |line|
     next if line.start_with?('#') || line.strip.empty?
     key, value = line.sub(/^[\s\t]*export[\s\t]*/, '').split('=', 2)
-    ENV[key] = value unless value.nil? || value.empty?
+    ENV[key] = value.chomp unless value.nil? || value.empty?
   end
 end
 
@@ -39,22 +38,22 @@ def evaluate_env_file(path, vars)
 end
 
 def check_lpass
-  which_result, _error, _status = Open3.capture3('which', 'lpass')
+  which_result = Puppet::Util.which('lpass')
   raise Puppet::ParseError, 'lpass command not found' if which_result.empty?
-  version, _error, _status = Open3.capture3('lpass', '--version')
+  version = Puppet::Util::Execution.execute(['lpass', '--version'], EXECUTE_OPTIONS).to_s
   raise Puppet::ParseError, "unexpected lpass version: #{version}" unless version =~ /v1.1.2$/
 end
 
 def login
   check_environment
 
-  lpass_status, error, status = Open3.capture3('lpass', 'status')
+  status = Puppet::Util::Execution.execute(['lpass', 'status'], EXECUTE_OPTIONS)
 
-  return lpass_status if status.success?
+  return status.to_s if status.exitstatus.eql?(0)
 
-  raise Puppet::ParseError, "error: lpass status: #{error}" unless lpass_status =~ /^Not logged in/
-  _login_result, error, status = Open3.capture3('lpasslogin')
-  raise Puppet::ParseError, "error: lpass login: #{error}" unless status.success?
+  raise Puppet::ParseError, "error: lpass status: #{status.to_s}" unless status.to_s =~ /^Not logged in/
+  status = Puppet::Util::Execution.execute(['lpasslogin'], EXECUTE_OPTIONS)
+  raise Puppet::ParseError, "error: lpass login: #{status.to_s}" unless status.exitstatus.eql?(0)
 end
 
 def sync_type
@@ -70,43 +69,43 @@ end
 # reference. We may want to add a "find" function which can use the basic
 # regex feature (lpass show -G pattern) to find and return IDs.
 def item_id(folder, name)
-  ls_result, error, status = Open3.capture3('lpass', 'ls', "--sync=#{sync_type}", folder)
+  status = Puppet::Util::Execution.execute(['lpass', 'ls', "--sync=#{sync_type}", folder], EXECUTE_OPTIONS)
 
-  raise Puppet::ParseError, "error: lpass ls '#{folder}': #{error}" unless status.success?
+  raise Puppet::ParseError, "error: lpass ls '#{folder}': #{status.to_s}" unless status.exitstatus.eql?(0)
 
-  ls_result =~ %r{#{Regexp.escape(folder)}/#{Regexp.escape(name)} \[id: ([^\]]+)\]}
+  status.to_s =~ %r{#{Regexp.escape(folder)}/#{Regexp.escape(name)} \[id: ([^\]]+)\]}
 
   Regexp.last_match(1)
 end
 
 def item_exists(uniquename)
-  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}", uniquename)
+  status = Puppet::Util::Execution.execute(['lpass', 'show', "--sync=#{sync_type}", uniquename], EXECUTE_OPTIONS)
 
-  return false if !status.success? && error =~ /Could not find specified account/
-  return true if status.success? && show_result =~ /#{Regexp.escape(uniquename)} \[id: [^\]]+\]/
+  return false if !status.exitstatus.eql?(0) && status.to_s =~ /Could not find specified account/
+  return true if status.exitstatus.eql?(0) && status.to_s =~ /#{Regexp.escape(uniquename)} \[id: [^\]]+\]/
 
-  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}"
+  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{status.to_s}"
 end
 
 # Items can be retreived by ID or UniqueName using the following functions.
 # The get_ functions will throw an exception if the item is not found.
 def get_item_by_id(id)
-  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
-                                              id, "--format=%fn#{LPASS_FIELD_SEP}%fv")
+  status = Puppet::Util::Execution.execute(['lpass', 'show', "--sync=#{sync_type}",\
+                                            id, "--format=%fn#{LPASS_FIELD_SEP}%fv"], EXECUTE_OPTIONS)
 
-  raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{error}" unless status.success?
+  raise Puppet::ParseError, "error: lpass show [id: #{id}]: #{status.to_s}" unless status.exitstatus.eql?(0)
 
-  parse_item(show_result)
+  parse_item(status.to_s)
 end
 
 def get_item_by_uniquename(uniquename)
-  show_result, error, status = Open3.capture3('lpass', 'show', "--sync=#{sync_type}",\
-                                              uniquename, "--format=%fn#{LPASS_FIELD_SEP}%fv")
+  status = Puppet::Util::Execution.execute(['lpass', 'show', "--sync=#{sync_type}",\
+                                            uniquename, "--format=%fn#{LPASS_FIELD_SEP}%fv"], EXECUTE_OPTIONS)
 
-  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}" \
-    unless status.success?
+  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{status.to_s}" \
+    unless status.exitstatus.eql?(0)
 
-  parse_item(show_result)
+  parse_item(status.to_s)
 end
 
 # The output appears to have reasonably consistent structure.
@@ -134,11 +133,15 @@ def parse_item(item)
 end
 
 def create_item(folder, name, content)
-  _add_result, error, status = Open3.capture3('lpass', 'add', "--sync=#{sync_type}", \
-                                              '--non-interactive', \
-                                              '--notes', "#{folder}/#{name}", \
-                                              :stdin_data => content)
+  content_file = Puppet::FileSystem::Uniquefile.new('puppet-lastpass')
+  content_file.write(content)
+  content_file.close
+  status = Puppet::Util::Execution.execute(['lpass', 'add', "--sync=#{sync_type}", \
+                                            '--non-interactive', \
+                                            '--notes', "#{folder}/#{name}"], \
+                                            EXECUTE_OPTIONS.merge({:stdinfile => content_file.path}))
+  content_file.unlink
 
-  raise Puppet::ParseError, "error: lpass add '#{folder}/#{name}': #{error}" \
-    unless status.success?
+  raise Puppet::ParseError, "error: lpass add '#{folder}/#{name}': #{status.to_s}" \
+    unless status.exitstatus.eql?(0)
 end
