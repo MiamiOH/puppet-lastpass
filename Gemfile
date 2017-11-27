@@ -36,15 +36,8 @@ group :development do
 end
 
 group :system_tests do
-  if RUBY_VERSION < '2.2.5'
-    # beaker 3.1+ requires ruby 2.2.5.  Lock to 2.0
-    gem 'beaker', '~> 2.0', :require => false
-    # beaker-rspec 6.0.0 requires beaker 3.0. Lock to 5.0
-    gem 'beaker-rspec', '~> 5.0', :require => false
-  else
-    gem 'beaker-rspec', :require => false
-  end
-  gem 'serverspec', :require => false
+  gem 'beaker-rspec', :require => false
+  gem 'serverspec',   :require => false
 end
 
 if (facterversion = ENV['FACTER_GEM_VERSION'])
@@ -56,7 +49,7 @@ end
 if (puppetversion = ENV['PUPPET_GEM_VERSION'])
   gem 'puppet', puppetversion, :require => false
 else
-  gem 'puppet', '~> 4.8', :require => false
+  gem 'puppet', '~> 4.10', :require => false
 end
 
 # vim:ft=ruby
