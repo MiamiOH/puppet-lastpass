@@ -1,3 +1,6 @@
+2017-05-23 (1.2.1)  Chris Edester
+        * Only import LPASS_* ENV values to prevent environment polution
+
 2017-05-23 (1.2.0)  Dirk Tepe
         * Change default user from root to puppet
         * Refactor env parsing to handle values with variables

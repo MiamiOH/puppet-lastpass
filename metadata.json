@@ -1,6 +1,6 @@
 {
   "name": "MiamiOH-lastpass",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Dirk Tepe",
   "summary": "Allow Puppet to interact with LastPass CLI",
   "license": "GPL-3.0+",
