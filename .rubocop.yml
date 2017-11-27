@@ -21,7 +21,14 @@ AllCops:
     - 'rpm/**/*'
   DisplayCopNames: true
 
-#################### Style ##################################
+#################### Layout ###############################
+
+# The shebang stuff at the top triggers this
+Layout/LeadingCommentSpace:
+  Exclude:
+    - Puppetfile
+
+#################### Style ###############################
 
 # Cop supports --auto-correct.
 # Configuration parameters: SupportedStyles.
@@ -29,15 +36,10 @@ AllCops:
 Style/HashSyntax:
   EnforcedStyle: hash_rockets
 
-# The shebang stuff at the top triggers this
-Style/LeadingCommentSpace:
-  Exclude:
-    - Puppetfile
-
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
-  
-#################### Metrics ################################
+
+#################### Metrics ###############################
 
 Metrics/LineLength:
   # Ruduce this... Max: 80
@@ -50,7 +52,7 @@ Metrics/BlockLength:
 Metrics/MethodLength:
   Max: 20
 
-##################### Bundler #############################
+##################### Bundler ##############################
 
 Bundler/DuplicatedGem:
   Enabled: false

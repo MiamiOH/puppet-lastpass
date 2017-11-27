@@ -22,10 +22,14 @@ def import_env_file(path)
   return unless File.file?(path)
   File.readlines(path).each do |line|
     next if line.start_with?('#') || line.strip.empty?
-    key, value = line.sub(/^[\s\t]*export[\s\t]*/, '').split('=', 2)
-    next unless key.start_with?('LPASS_') # we don't want things like http_proxy
-    ENV[key] = value.chomp unless value.nil? || value.empty?
+    line_to_env(line)
   end
+end
+
+def line_to_env(line)
+  key, value = line.sub(/^[\s\t]*export[\s\t]*/, '').split('=', 2)
+  return unless key.start_with?('LPASS_') # we don't want things like http_proxy
+  ENV[key] = value.chomp unless value.nil? || value.empty?
 end
 
 # Actually evaluates a bash shell script for exported env vars
