@@ -110,6 +110,9 @@ def get_item_by_uniquename(uniquename)
 
   raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}" \
     unless status.success?
+  # lpass returns exit status of success, even though we consider it to be an error when
+  # multiple matches are found. Our code does not handle that very well and I'm not sure
+  # what we could actually do about it, other than explode with a good message.
   raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: Multiple matches found" \
     if show_result =~ /Multiple matches found/
 
