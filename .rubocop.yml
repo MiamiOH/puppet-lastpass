@@ -39,6 +39,9 @@ Style/HashSyntax:
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
 
+Style/MixinUsage:
+  Enabled: false
+
 #################### Metrics ###############################
 
 Metrics/LineLength:
