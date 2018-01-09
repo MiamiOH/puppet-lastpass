@@ -110,6 +110,8 @@ def get_item_by_uniquename(uniquename)
 
   raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: #{error}" \
     unless status.success?
+  raise Puppet::ParseError, "error: lpass show [uniquename: #{uniquename}]: Multiple matches found" \
+    if show_result =~ /Multiple matches found/
 
   parse_item(show_result)
 end
@@ -130,8 +132,10 @@ def parse_item(item)
     if line =~ /#{LPASS_FIELD_SEP}/
       field, value = line.split(LPASS_FIELD_SEP)
       note[field] = value
-    else
+    elsif field && note[field]
       note[field] << "\n#{line}"
+    else
+      raise Puppet::ParseError, "error: lpass parse_item [item: #{item}]: no field seperator"
     end
   end
 
