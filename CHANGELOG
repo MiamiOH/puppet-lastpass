@@ -1,3 +1,6 @@
+2018-01-09 (1.2.2)  Chris Edester
+        * Return useful error messages about multiple matches found
+
 2017-11-27 (1.2.1)  Chris Edester
         * Only import LPASS_* ENV values to prevent environment pollution
         * Chop off newlines for env like sync_type, so you can set them without error
