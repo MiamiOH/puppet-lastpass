@@ -5,7 +5,7 @@
   "summary": "Allow Puppet to interact with LastPass CLI",
   "license": "GPL-3.0+",
   "source": "https://github.com/MiamiOH/puppet-lastpass.git",
-  "project_page": "hhttps://github.com/MiamiOH/puppet-lastpass",
+  "project_page": "https://github.com/MiamiOH/puppet-lastpass",
   "issues_url": "https://github.com/MiamiOH/puppet-lastpass/issues",
   "tags": ["lastpass"],
   "dependencies": [

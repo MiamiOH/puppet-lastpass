@@ -1,5 +1,6 @@
-2017-05-23 (1.2.1)  Chris Edester
-        * Only import LPASS_* ENV values to prevent environment polution
+2017-11-27 (1.2.1)  Chris Edester
+        * Only import LPASS_* ENV values to prevent environment pollution
+        * Chop off newlines for env like sync_type, so you can set them without error
 
 2017-05-23 (1.2.0)  Dirk Tepe
         * Change default user from root to puppet
