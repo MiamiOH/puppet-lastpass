@@ -1,3 +1,9 @@
+2018-03-28 (1.3.0)  Dirk Tepe
+        * Update minimum required CLI version to 1.3.0
+        * Add real version compare for minimum LastPass CLI requirement
+        * Take package ensure as a class param
+        * Update rpm spec for man and bash completion files
+
 2018-01-09 (1.2.2)  Chris Edester
         * Return useful error messages about multiple matches found
 
