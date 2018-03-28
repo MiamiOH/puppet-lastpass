@@ -6,6 +6,7 @@
 class lastpass (
   $manage_package = true,
   $package        = $lastpass::params::package,
+  $package_ensure = 'present',
   $lpass_home     = '$HOME/.lpass',
   $user           = 'puppet',
   $group          = undef,
@@ -38,7 +39,7 @@ class lastpass (
 
   if $manage_package {
     package { $package:
-      ensure => present,
+      ensure => $package_ensure,
     }
   }
 
@@ -75,7 +76,8 @@ class lastpass (
 
   profiled::script { 'lpass.sh':
     ensure  => file,
-    content => "export LPASS_HOME=${lpass_home}",
+    content => "export LPASS_HOME=${lpass_home}
+                export PATH=/usr/local/bin:\$PATH",
     shell   => 'absent',
   }
 }

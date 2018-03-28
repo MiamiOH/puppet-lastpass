@@ -1,10 +1,11 @@
 require 'open3'
 
 LPASS_FIELD_SEP = '<==>'.freeze
+LPASS_MINIMUM_VERSION = '1.3.0'.freeze
 
 def check_environment
   evaluate_env_file('/etc/profile.d/lpass.sh', 'LPASS_HOME')
-  raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login}) not found" \
+  raise Puppet::ParseError, "Expected login file (#{ENV['LPASS_HOME']}/login) not found" \
     unless File.file?("#{ENV['LPASS_HOME']}/login")
   import_env_file("#{ENV['LPASS_HOME']}/env")
   check_lpass
@@ -46,8 +47,10 @@ end
 def check_lpass
   which_result, _error, _status = Open3.capture3('which', 'lpass')
   raise Puppet::ParseError, 'lpass command not found' if which_result.empty?
-  version, _error, _status = Open3.capture3('lpass', '--version')
-  raise Puppet::ParseError, "unexpected lpass version: #{version}" unless version =~ /v1.1.2$/
+  version_string, _error, _status = Open3.capture3('lpass', '--version')
+  name, version = version_string.match(/^(.*) v(.*)$/).captures
+  raise Puppet::ParseError, "unexpected #{name} version: #{version}" \
+    unless call_function('versioncmp', [LPASS_MINIMUM_VERSION, version]) >= 0
 end
 
 def login
