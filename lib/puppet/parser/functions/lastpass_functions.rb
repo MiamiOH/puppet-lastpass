@@ -50,7 +50,7 @@ def check_lpass
   version_string, _error, _status = Open3.capture3('lpass', '--version')
   name, version = version_string.match(/^(.*) v(.*)$/).captures
   raise Puppet::ParseError, "unexpected #{name} version: #{version}" \
-    unless call_function('versioncmp', [LPASS_MINIMUM_VERSION, version]) >= 0
+    unless call_function('versioncmp', [version, LPASS_MINIMUM_VERSION]) >= 0
 end
 
 def login
