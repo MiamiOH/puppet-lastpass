@@ -1,7 +1,7 @@
 require 'open3'
 
 LPASS_FIELD_SEP = '<==>'.freeze
-LPASS_MINIMUM_VERSION = '1.3.0'.freeze
+LPASS_MINIMUM_VERSION = '1.1.2'.freeze
 
 def check_environment
   evaluate_env_file('/etc/profile.d/lpass.sh', 'LPASS_HOME')
@@ -50,7 +50,7 @@ def check_lpass
   version_string, _error, _status = Open3.capture3('lpass', '--version')
   name, version = version_string.match(/^(.*) v(.*)$/).captures
   raise Puppet::ParseError, "unexpected #{name} version: #{version}" \
-    unless call_function('versioncmp', [LPASS_MINIMUM_VERSION, version]) >= 0
+    unless call_function('versioncmp', [version, LPASS_MINIMUM_VERSION]) >= 0
 end
 
 def login

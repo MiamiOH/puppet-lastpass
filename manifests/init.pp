@@ -76,8 +76,10 @@ class lastpass (
 
   profiled::script { 'lpass.sh':
     ensure  => file,
-    content => "export LPASS_HOME=${lpass_home}
-                export PATH=/usr/local/bin:\$PATH",
+    content => [
+      "export LPASS_HOME=${lpass_home}",
+      'export PATH=/usr/local/bin:$PATH',
+    ].join("\n"),
     shell   => 'absent',
   }
 }
