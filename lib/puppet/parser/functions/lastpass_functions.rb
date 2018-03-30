@@ -1,7 +1,7 @@
 require 'open3'
 
 LPASS_FIELD_SEP = '<==>'.freeze
-LPASS_MINIMUM_VERSION = '1.3.0'.freeze
+LPASS_MINIMUM_VERSION = '1.1.2'.freeze
 
 def check_environment
   evaluate_env_file('/etc/profile.d/lpass.sh', 'LPASS_HOME')
