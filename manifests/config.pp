@@ -41,7 +41,7 @@ define lastpass::config (
   $munge  = true,
 ) {
 
-  include '::lastpass'
+  include 'lastpass'
 
   if ! $munge {
     $variable = $name
